@@ -83,8 +83,11 @@ fn main() {
     if cfg!(feature = "static") {
         println!("cargo:rustc-link-lib=static=s-dftd3");
         println!("cargo:rustc-link-lib=static=mctc-lib");
-        println!("cargo:rerun-if-env-changed=DFTD3_DEV_LINUX");
-        if std::env::var("DFTD3_DEV_LINUX").is_ok() {
+        // static linking may requires gomp and gfortran to be dynamically linked
+        // but that depends on the compiler and the system, so user should take care
+        // of that. We just provide a hint here.
+        println!("cargo:rerun-if-env-changed=DFTD3_SRC_DEV");
+        if std::env::var("DFTD3_SRC_DEV").is_ok() {
             println!("cargo:rustc-link-lib=gomp");
             println!("cargo:rustc-link-lib=gfortran");
         }

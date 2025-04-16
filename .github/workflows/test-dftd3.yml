@@ -1,4 +1,4 @@
-name: test-dftd3-src
+name: test-dftd3
 
 on:
   push:
@@ -7,10 +7,11 @@ on:
     branches: [main]
 
 jobs:
-  build-static:
+  test-from-miniconda:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
       - name: run tests directly
         run: |
           cd dftd3

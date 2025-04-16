@@ -8,8 +8,8 @@
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=RSTSR_DEV");
-    if std::env::var("RSTSR_DEV").is_ok() {
+    println!("cargo:rerun-if-env-changed=DFTD3_DEV");
+    if std::env::var("DFTD3_DEV").is_ok() {
         std::env::var("LD_LIBRARY_PATH")
             .unwrap()
             .split(":")

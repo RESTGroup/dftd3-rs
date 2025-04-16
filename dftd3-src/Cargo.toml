@@ -1,0 +1,21 @@
+[package]
+name = "dftd3-src"
+description = "simple-dftd3 build-from-source or library selection"
+readme = "readme.md"
+
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+
+[dev-dependencies]
+dftd3 = { path = "../dftd3" }
+
+[build-dependencies]
+cmake = { version = "0.1" }
+
+[features]
+build_from_source = []
+static = []

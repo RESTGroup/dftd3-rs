@@ -10,14 +10,14 @@ use std::result::Result;
 /// Get the version of the DFTD3 library.
 ///
 /// The version is returned as a string in the format "major.minor.patch".
-pub fn get_api_version() -> String {
+pub fn dftd3_get_api_version() -> String {
     let version = unsafe { ffi::dftd3_get_version() };
     format!("{}.{}.{}", version / 10000, version / 100 % 100, version % 100)
 }
 
 /// Get the version of the DFTD3 library in list of integers (major, minor,
 /// patch).
-pub fn get_api_version_compact() -> [usize; 3] {
+pub fn dftd3_get_api_version_compact() -> [usize; 3] {
     let version = unsafe { ffi::dftd3_get_version() } as usize;
     [version / 10000, version / 100 % 100, version % 100]
 }
@@ -1062,12 +1062,12 @@ mod tests {
 
     #[test]
     fn test_get_api_version() {
-        println!("API version: {}", get_api_version());
+        println!("API version: {}", dftd3_get_api_version());
     }
 
     #[test]
     fn test_get_api_version_compact() {
-        println!("API version: {:?}", get_api_version_compact());
+        println!("API version: {:?}", dftd3_get_api_version_compact());
     }
 
     #[test]

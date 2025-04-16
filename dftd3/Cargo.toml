@@ -1,0 +1,43 @@
+[package]
+name = "dftd3"
+description = "FFI bindings and wrappers of simple-dftd3"
+readme = "readme.md"
+
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+
+[dependencies]
+derive_builder = { version = "0.20" }
+duplicate = { version = "2.0" }
+
+[dev-dependencies]
+rstest = { version = "0.25" }
+approx = { version = "0.5" }
+
+[features]
+# geometric counter-poise 
+gcp = []
+
+[package.metadata.docs.rs]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples", "--document-private-items"]
+all-features = true
+
+[[example]]
+name = "energy_r2scan_d3bj"
+doc-scrape-examples = true
+
+[[example]]
+name = "energy_r2scan_d3zero"
+doc-scrape-examples = true
+
+[[example]]
+name = "gradient_r2scan_d3bj"
+doc-scrape-examples = true
+
+[[example]]
+name = "test_interface"
+doc-scrape-examples = true

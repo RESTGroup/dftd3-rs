@@ -29,6 +29,13 @@ pub struct _dftd3_model {
 pub type dftd3_model = *mut _dftd3_model;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
+pub struct _dftd3_gcp {
+    _unused: [u8; 0],
+}
+#[doc = " Counter-poisecorrection parameters class"]
+pub type dftd3_gcp = *mut _dftd3_gcp;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
 pub struct _dftd3_param {
     _unused: [u8; 0],
 }
@@ -156,6 +163,17 @@ unsafe extern "C" {
     ) -> dftd3_param;
     #[doc = " Delete damping parameters"]
     pub fn dftd3_delete_param(arg1: *mut dftd3_param);
+    #[doc = " Load geometric counter-poise parameters from internal storage"]
+    pub fn dftd3_load_gcp_param(
+        arg1: dftd3_error,
+        arg2: dftd3_structure,
+        arg3: *mut c_char,
+        arg4: *mut c_char,
+    ) -> dftd3_gcp;
+    #[doc = " Set realspace cutoffs (quantities in Bohr)"]
+    pub fn dftd3_set_gcp_realspace_cutoff(arg1: dftd3_error, arg2: dftd3_gcp, arg3: f64, arg4: f64);
+    #[doc = " Delete counter-poise parameters"]
+    pub fn dftd3_delete_gcp(arg1: *mut dftd3_gcp);
     #[doc = " Evaluate the dispersion energy and its derivatives"]
     pub fn dftd3_get_dispersion(
         arg1: dftd3_error,
@@ -172,6 +190,15 @@ unsafe extern "C" {
         arg2: dftd3_structure,
         arg3: dftd3_model,
         arg4: dftd3_param,
+        arg5: *mut f64,
+        arg6: *mut f64,
+    );
+    #[doc = " Evaluate the dispersion energy and its derivatives"]
+    pub fn dftd3_get_counterpoise(
+        arg1: dftd3_error,
+        arg2: dftd3_structure,
+        arg3: dftd3_gcp,
+        arg4: *mut f64,
         arg5: *mut f64,
         arg6: *mut f64,
     );

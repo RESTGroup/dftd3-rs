@@ -1,0 +1,21 @@
+name: test-dftd3-src
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run tests directly
+        run: |
+          cd dftd3
+          conda install dftd3-python -c conda-forge
+          ls /usr/share/miniconda/lib
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
+          export DFTD3_DEV=1
+          cargo test --examples

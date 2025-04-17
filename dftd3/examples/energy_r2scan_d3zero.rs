@@ -31,6 +31,8 @@ fn main_test() {
     let model = DFTD3Model::new(&numbers, &positions, None, None);
     // explicitly set DFTD3 parameters
     for atm in [true, false] {
+        let energy_ref = if atm { -0.01410721853585842 } else { -0.014100267345314462 };
+
         let param = DFTD3ZeroDampingParamBuilder::default()
             .s8(1.683)
             .rs6(1.139)
@@ -40,7 +42,37 @@ fn main_test() {
         let (energy, _, _) = model.get_dispersion(&param, false).into();
 
         println!("Dispersion energy: {}", energy);
-        let energy_ref = if atm { -0.01410721853585842 } else { -0.014100267345314462 };
+        assert!((energy - energy_ref).abs() < 1e-9);
+
+        // this way to provide custom damping parameter is also valid
+        let param = DFTD3ZeroDampingParam {
+            s6: 1.0,
+            s8: 1.683,
+            rs6: 1.139,
+            rs8: 1.0,
+            alp: 14.0,
+            s9: if atm { 1.0 } else { 0.0 },
+        };
+        let param = param.new_param();
+        // obtain the dispersion energy without gradient and sigma
+        let (energy, _, _) = model.get_dispersion(&param, false).into();
+
+        println!("Dispersion energy: {}", energy);
+        assert!((energy - energy_ref).abs() < 1e-9);
+
+        // this way to provide custom damping parameter is also valid
+        let param = DFTD3Param::new_zero_damping(
+            1.0,                         // s6
+            1.683,                       // s8
+            if atm { 1.0 } else { 0.0 }, // s9
+            1.139,                       // rs6
+            1.0,                         // rs8
+            14.0,                        // alp
+        );
+        // obtain the dispersion energy without gradient and sigma
+        let (energy, _, _) = model.get_dispersion(&param, false).into();
+
+        println!("Dispersion energy: {}", energy);
         assert!((energy - energy_ref).abs() < 1e-9);
     }
 }

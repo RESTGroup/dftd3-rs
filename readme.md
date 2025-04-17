@@ -12,7 +12,11 @@ This crate is not official bindgen project. It is originally intended to potenti
 
 This crate contains simple-dftd3 FFI bindings and wrapper.
 
-Crate version: [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://crates.io/crates/dftd3)
+| Resources | Badges |
+|--|--|
+| Crate | [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://crates.io/crates/dftd3) |
+| API Document | [![API Documentation](https://docs.rs/dftd3/badge.svg)](https://docs.rs/dftd3) |
+| FFI Binding | [bd59f81](https://github.com/dftd3/simple-dftd3/commit/bd59f81e9f3ab3cf383e4699e1dda03dce5d9845) after [![v1.2.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.2.1) |
 
 ### Cargo features of `dftd3`
 
@@ -22,7 +26,7 @@ Crate version: [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://cra
 
 For example, full code for computing r2SCAN dispersion energy with D3(BJ):
 
-```rust, ignore
+```rust
 fn main() {
     use dftd3::prelude::*;
 

@@ -19,4 +19,5 @@ jobs:
           ls /usr/share/miniconda/lib
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
           export DFTD3_DEV=1
+          cargo test
           cargo test --examples

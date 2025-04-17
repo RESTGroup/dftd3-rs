@@ -4,7 +4,7 @@ If your task is to retrive damping parameters of some specific xc-functionals, y
 
 In this crate, you may have three ways to define customized parameters:
 
-- By `DFTD3***DampingParam` struct. In this way, all parameters (include optional parameters with default value) must be provided. For example of B3-Zero:
+- By `DFTD3***DampingParam` struct. In this way, all parameters (include optional parameters with default value) must be provided. For example of D3-Zero:
 
     ```rust
   # use dftd3::prelude::*;
@@ -21,7 +21,7 @@ In this crate, you may have three ways to define customized parameters:
     // this will give param: DFTD3Param
     ```
 
-- By `DFTD3***DampingParamBuilder` struct. In this way, optional parameters can be omitted. For example of B3-Zero:
+- By `DFTD3***DampingParamBuilder` struct. In this way, optional parameters can be omitted. For example of D3-Zero:
 
     ```rust
   # use dftd3::prelude::*;
@@ -34,7 +34,7 @@ In this crate, you may have three ways to define customized parameters:
     // this will give param: DFTD3Param
     ```
 
-- By `DFTD3Param` utility. In this way, all parameters must be provided. For example of B3-Zero:
+- By `DFTD3Param` utility. In this way, all parameters must be provided. For example of D3-Zero:
 
     ```rust
   # use dftd3::prelude::*;

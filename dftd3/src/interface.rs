@@ -1,3 +1,5 @@
+//! DFTD3 interface (safe wrapper).
+
 use crate::ffi;
 use derive_builder::{Builder, UninitializedFieldError};
 use duplicate::duplicate_item;
@@ -555,14 +557,37 @@ impl DFTD3Param {
 
 /* #region DFTD3 Damping derivatives */
 
-/// Load damping parameters by functional and DFT-D3 versions.
+/// Load damping parameters by xc-functional and DFT-D3 versions.
 ///
-/// Available versions are:
+/// # Arguments
+///
+/// - `version` - DFT-D3 variant (`d3bj`, `d3zero`, `d3bjm`, `d3zerom`, `d3op`)
+/// - `method` - xc-functional name (e.g. `pbe0`, `b3lyp`, etc.)
+/// - `atm` - use three-body correction (true) or two-body correction (false)
+///
+/// # Available DFTD3 variants (versions)
+///
 /// - `d3bj`: rational damping;
 /// - `d3zero`: zero damping;
 /// - `d3bjm`: modified rational damping;
 /// - `d3zerom`: modified zero damping;
 /// - `d3op`: optimized power damping.
+///
+/// # Notes
+///
+/// If you want to specify custom parameters, please use
+/// - [`DFTD3RationalDampingParam`] for rational damping;
+/// - [`DFTD3ZeroDampingParam`] for zero damping;
+/// - [`DFTD3ModifiedRationalDampingParam`] for modified rational damping;
+/// - [`DFTD3ModifiedZeroDampingParam`] for modified zero damping;
+/// - [`DFTD3OptimizedPowerDampingParam`] for optimized power damping.
+///
+/// You may also check [`DFTD3Param`], but note that this struct is somehow
+/// low-level API, so use it with more care.
+///
+/// Please note that parameters object can be retrived, only means that we can
+/// use these parameters for program computation, and does not necessarily means
+/// that `s6`, `s8`, etc is available and can be printed.
 pub fn dftd3_load_param(version: &str, method: &str, atm: bool) -> DFTD3Param {
     dftd3_load_param_f(version, method, atm).unwrap()
 }
@@ -607,17 +632,38 @@ pub trait DFTD3LoadParamAPI {
     }
 }
 
+/// Rational damping function for DFT-D3.
+///
+/// The original scheme was proposed by Becke and Johnson [^becke2005]
+/// [^johnson2005] [^johnson2006] and implemented in a slightly adjusted form
+/// using only the C8/C6 ratio in the critical for DFT-D3 [^grimme2011]. The
+/// rational damping scheme has the advantage of damping the dispersion energy
+/// to finite value, rather than removing it at short distances.
+///
+/// # Note
+///
+/// The zero damping function is retained for the three-body contributions from
+/// the ATM term.
+///
+/// [^becke2005]: Becke, A. D.; Johnson, E. R. A density-functional model of the dispersion interaction. *J. Chem. Phys.*, **2005**, *123*(15), 154101. doi: [10.1063/1.2065267](https://dx.doi.org/10.1063/1.2065267).
+/// [^johnson2005]: Johnson, E. R.; Becke, A. D. A post-hartree–fock model of intermolecular interactions. *J. Chem. Phys.*, **2005**, *123*(2), 024101. doi:[10.1063/1.1949201](https://dx.doi.org/10.1063/1.1949201).
+/// [^johnson2006]: Johnson, E. R.; Becke, A. D. A post-hartree-fock model of intermolecular interactions: inclusion of higher-order corrections. *J. Chem. Phys.*, **2006**, *124*(17), 174104. doi: [10.1063/1.2190220](https://dx.doi.org/10.1063/1.2190220).
+/// [^grimme2011]: Grimme, S.; Ehrlich, S.; Goerigk, L. Effect of the damping function in dispersion corrected density functional theory. *J. Comput. Chem.*, **2011**, *32*, 1456–1465. doi: [10.1002/jcc.21759](https://dx.doi.org/10.1002/jcc.21759).
+#[doc = include_str!("damping_param_usage.md")]
 #[derive(Builder, Debug, Clone)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3RationalDampingParam {
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     pub a2: f64,
     #[builder(default = 14.0)]
+    #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }
 
@@ -628,24 +674,35 @@ impl DFTD3ParamAPI for DFTD3RationalDampingParam {
     }
 }
 
-/// Original DFT-D3 damping function,\ :footcite:`grimme2010` based on a variant
-/// proposed by Chai and Head-Gordon.\ :footcite:`chai2008`
-/// Since it is damping the dispersion energy to zero at short distances it is
-/// usually called zero damping scheme for simplicity. However, due to this
-/// short-range limit of the dispersion energy a repulsive contribution to the
-/// gradient can arise, which is considered artificial.\ :footcite:`grimme2011`
+/// Original DFT-D3 damping function with variant.
+///
+/// Original DFT-D3 damping function [^grimme2010], based on a variant proposed
+/// by Chai and Head-Gordon [^chai2008]. Since it is damping the dispersion
+/// energy to zero at short distances it is usually called zero damping scheme
+/// for simplicity. However, due to this short-range limit of the dispersion
+/// energy a repulsive contribution to the gradient can arise, which is
+/// considered artificial [^grimme2011].
+///
+/// [^grimme2010]: S. Grimme, J. Antony, S. Ehrlich, and H. Krieg. A consistent and accurate ab initio parametrization of density functional dispersion correction (DFT-D) for the 94 elements H-Pu. J. Chem. Phys., 132:154104, 2010. doi: [10.1063/1.3382344](https://dx.doi.org/10.1063/1.3382344).
+/// [^chai2008]: Chai, J.-D.; Head-Gordon, M. Long-range corrected hybrid density functionals with damped atom–atom dispersion corrections. *Phys. Chem. Chem. Phys.*, **2008**, *10*(44), 6615–6620. doi: [10.1039/B810189B](https://dx.doi.org/10.1039/B810189B).
+/// [^grimme2011]: Grimme, S.; Ehrlich, S.; Goerigk, L. Effect of the damping function in dispersion corrected density functional theory. *J. Comput. Chem.*, **2011**, *32*, 1456–1465. doi: [10.1002/jcc.21759](https://dx.doi.org/10.1002/jcc.21759).
+#[doc = include_str!("damping_param_usage.md")]
 #[derive(Builder, Debug, Clone)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3ZeroDampingParam {
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub rs6: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub rs8: f64,
     #[builder(default = 14.0)]
+    #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }
 
@@ -656,26 +713,28 @@ impl DFTD3ParamAPI for DFTD3ZeroDampingParam {
     }
 }
 
-/// Modified version of the rational damping parameters. The functional form of
-/// the damping function is *unmodified* with respect to the original rational
-/// damping scheme. However, for a number of functionals new parameters were
-/// introduced.:footcite:`smith2016`
+/// Modified version of the rational damping parameters.
 ///
-/// This constructor allows to automatically load the reparameterized damping
-/// function from the library rather than the original one. Providing a full
-/// parameter set is functionally equivalent to using the `RationalDampingParam`
-/// constructor.
+/// The functional form of the damping function is **unmodified** with respect
+/// to the original rational damping scheme. However, for a number of
+/// functionals new parameters were introduced [^smith2016].
+///
+/// [^smith2016]: Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. Revised damping parameters for the D3 dispersion correction to density functional theory. *J. Phys. Chem. Lett.*, **2016**, *7*(12), 2197–2203. doi: [10.1021/acs.jpclett.6b00780](https://dx.doi.org/10.1021/acs.jpclett.6b00780).
+#[doc = include_str!("damping_param_usage.md")]
 #[derive(Builder, Debug, Clone)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3ModifiedRationalDampingParam {
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     pub a2: f64,
     #[builder(default = 14.0)]
+    #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }
 
@@ -686,25 +745,33 @@ impl DFTD3ParamAPI for DFTD3ModifiedRationalDampingParam {
     }
 }
 
-/// Modified zero damping function for DFT-D3.\ :footcite:`smith2016`
-/// This scheme adds an additional offset parameter to the zero damping scheme
-/// of the original DFT-D3.
+/// Modified zero damping function for DFT-D3.
 ///
-/// .. note::
+/// This scheme [^smith2016] adds an additional offset parameter to the zero
+/// damping scheme of the original DFT-D3.
 ///
-///    This damping function is identical to zero damping for ``bet=0.0``.
+/// # Note
+///
+/// This damping function is identical to zero damping for `bet=0.0`.
+///
+/// [^smith2016]: Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. Revised damping parameters for the D3 dispersion correction to density functional theory. *J. Phys. Chem. Lett.*, **2016**, *7*(12), 2197–2203. doi: [10.1021/acs.jpclett.6b00780](https://dx.doi.org/10.1021/acs.jpclett.6b00780).
+#[doc = include_str!("damping_param_usage.md")]
 #[derive(Builder, Debug, Clone)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3ModifiedZeroDampingParam {
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub rs6: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub rs8: f64,
     #[builder(default = 14.0)]
+    #[doc = r"optional, default 14.0"]
     pub alp: f64,
     pub bet: f64,
 }
@@ -716,25 +783,32 @@ impl DFTD3ParamAPI for DFTD3ModifiedZeroDampingParam {
     }
 }
 
-/// Optimized power version of the rational damping parameters.\
-/// :footcite:`witte2017` The functional form of the damping function is
-/// modified by adding an additional zero-damping like power function.
+/// Optimized power version of the rational damping parameters.
+///
+/// The functional form of the damping function is modified by adding an
+/// additional zero-damping like power function [^witte2017].
 ///
 /// This constructor allows to automatically load the reparameterized damping
 /// function from the library rather than the original one. Providing the
-/// parameter `bet=0` is equivalent to using rational the `RationalDampingParam`
-/// constructor.
+/// parameter `bet=0` is equivalent to using rational the
+/// [`DFTD3RationalDampingParam`] constructor.
+///
+/// [^witte2017]: Witte, J.; Mardirossian, N.; Neaton, J. B.; Head-Gordon, M. Assessing DFT-D3 damping functions across widely used density functionals: Can we do better? *J. Chem. Theory Comput.*, **2017**, *13*(5), 2043–2052. doi: [10.1021/acs.jctc.7b00176](https://dx.doi.org/10.1021/acs.jctc.7b00176).
+#[doc = include_str!("damping_param_usage.md")]
 #[derive(Builder, Debug, Clone)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3OptimizedPowerDampingParam {
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     pub a2: f64,
     #[builder(default = 14.0)]
+    #[doc = r"optional, default 14.0"]
     pub alp: f64,
     pub bet: f64,
 }

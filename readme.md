@@ -12,7 +12,11 @@ This crate is not official bindgen project. It is originally intended to potenti
 
 This crate contains simple-dftd3 FFI bindings and wrapper.
 
-Crate version: [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://crates.io/crates/dftd3)
+| Resources | Badges |
+|--|--|
+| Crate | [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://crates.io/crates/dftd3) |
+| API Document | [![API Documentation](https://docs.rs/dftd3/badge.svg)](https://docs.rs/dftd3) |
+| FFI Binding | [bd59f81](https://github.com/dftd3/simple-dftd3/commit/bd59f81e9f3ab3cf383e4699e1dda03dce5d9845) after [![v1.2.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.2.1) |
 
 ### Cargo features of `dftd3`
 
@@ -22,7 +26,7 @@ Crate version: [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://cra
 
 For example, full code for computing r2SCAN dispersion energy with D3(BJ):
 
-```rust, ignore
+```rust
 fn main() {
     use dftd3::prelude::*;
 
@@ -67,6 +71,59 @@ fn main() {
     gradient.chunks(3).for_each(|chunk| println!("{:16.9?}", chunk));
 }
 ```
+
+## Installation guide and Crate `dftd3-src`
+
+| Resources | Badges |
+|--|--|
+| Crate | [![Crate](https://img.shields.io/crates/v/dftd3-src.svg)](https://crates.io/crates/dftd3-src) |
+
+To use crate `dftd3` in rust, you may need to perform some configuration to properly link `libs-dftd3.so` into your own program.
+
+### Install `s-dftd3`
+
+Please refer to original [github](https://github.com/dftd3/simple-dftd3) repository for more instructions.
+
+The easiest way is install from conda/mamba, and you can retrive the shared/static library therein.
+
+### Manually link `s-dftd3` into your project
+
+Similar to other projects, after library search path properly defined
+```rust,ignore
+println!("cargo:rustc-link-search=native={}", path);
+```
+you may link `s-dftd3` and `mctc-lib` by cargo instructions **in your own project**:
+```rust,ignore
+// following code is for static linking
+println!("cargo:rustc-link-lib=static=s-dftd3");
+println!("cargo:rustc-link-lib=static=mctc-lib");
+// following code is for dynamic linking
+println!("cargo:rustc-link-lib=s-dftd3");
+println!("cargo:rustc-link-lib=mctc-lib");
+```
+It should be noted that, for static linking, you may also need to dynamic link Fortran and OpenMP libraries (for the library installed by conda or mamba, it is usually `gfortran` and `gomp`).
+
+### Link `s-dftd3` by crate `dftd3-src`
+
+You can also link `s-dftd3` by crate `dftd3-src`.
+
+First, **in your own project**'s `lib.rs` or `main.rs`, you need to add a line for explicitly importing this library:
+```rust,ignore
+extern crate dftd3_src;
+```
+
+If you have compiled `s-dftd3` library, make sure path of it (together with `mctc-lib`) is either in
+- `DFTD3_DIR`
+- `REST_EXT_DIR`
+- `LD_LIBRARY_PATH`
+- or in other common system library paths.
+
+If you have not compiled `s-dftd3` library, you may try out cargo feature `build_from_source`, but that can also cause trobule when distributing your program binary, so use with caution.
+
+### Cargo features of `dftd3-src`
+
+- **`build_from_source`**: This will use CMake and meson, and pull code from github to first perform build for simple-dftd3. Though this option can be developer-friendly (you do not need to perform any other configurations to make program compile and run by cargo), `build_from_source` does not provide customized compilation.
+- **`static`**: This will link static libary instead of dynamic one. Please note that 1. static linking may require additional Fortran and OpenMP linking, which is not provided in this crate; 2. staticly linking LGPL-3.0 license may require your project to be GPL-3.0.
 
 ## License
 

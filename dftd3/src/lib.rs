@@ -21,7 +21,17 @@ You may also check [`DFTD3Param`](interface::DFTD3Param), but note that this str
 */
 #![doc = include_str!("../readme.md")]
 
-pub mod ffi;
+// Use ffi module from ffi/ directory for both static and dynamic loading
+#[cfg(not(feature = "dynamic_loading"))]
+pub mod ffi_static;
+#[cfg(not(feature = "dynamic_loading"))]
+pub use ffi_static as ffi;
+
+#[cfg(feature = "dynamic_loading")]
+pub mod ffi_dynamic;
+#[cfg(feature = "dynamic_loading")]
+pub use ffi_dynamic as ffi;
+
 pub mod interface;
 
 #[cfg(feature = "gcp")]

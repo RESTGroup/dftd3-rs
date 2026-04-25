@@ -13,6 +13,7 @@ license.workspace = true
 [dependencies]
 derive_builder = { version = "0.20" }
 duplicate = { version = "2.0" }
+libloading = { version = "0.8", optional = true }
 
 [dev-dependencies]
 rstest = { version = "0.25" }
@@ -22,8 +23,12 @@ approx = { version = "0.5" }
 # geometric counter-poise
 gcp = []
 
+# Dynamic library loading support
+dynamic_loading = ["dep:libloading"]
+
 # API version features (cumulative)
 # Each version enables all functions introduced in that version
+# Note: dynamic_loading ignores API version features - all functions are available at runtime
 api-v0_2 = []
 api-v0_3 = ["api-v0_2"]
 api-v0_4 = ["api-v0_3"]

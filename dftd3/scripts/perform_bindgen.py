@@ -1,8 +1,11 @@
-# # Bindgen of simple-dftd3
+# # Bindgen of simple-dftd3 (static linking)
 
 # This python file can also be opened by Jupyter notebook with jupytext extension.
 
 # User must change `path_repo` to the local path of simple-dftd3 repository.
+
+# This script generates FFI bindings for static linking only.
+# For dynamic loading, run util_dyload.py separately.
 
 import subprocess
 import os
@@ -206,8 +209,8 @@ with open("ffi.rs", "w") as f:
 
 # ## Move FFI binding files to output
 
-for name in ["ffi.rs"]:
-    shutil.copy(f"{path_temp}/{name}", f"{path_out}/src/{name}")
+# ffi_static.rs for static linking
+shutil.copy(f"{path_temp}/ffi.rs", f"{path_out}/src/ffi_static.rs")
 
 # ## Cargo fmt
 

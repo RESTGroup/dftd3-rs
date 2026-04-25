@@ -571,6 +571,50 @@ impl DFTD3Param {
     pub fn load_optimizedpower_damping(method: &str, atm: bool) -> Self {
         Self::load_optimizedpower_damping_f(method, atm).unwrap()
     }
+
+    #[cfg(feature = "api-v1_3")]
+    /// Create new CSO damping parameters (failable)
+    pub fn new_cso_damping_f(
+        s6: f64,
+        s9: f64,
+        a1: f64,
+        a2: f64,
+        a3: f64,
+        a4: f64,
+        alp: f64,
+    ) -> Result<Self, DFTD3Error> {
+        let mut error = DFTD3Error::new();
+        let ptr =
+            unsafe { ffi::dftd3_new_cso_damping(error.get_c_ptr(), s6, s9, a1, a2, a3, a4, alp) };
+        match error.check() {
+            true => Err(error),
+            false => Ok(Self { ptr }),
+        }
+    }
+
+    #[cfg(feature = "api-v1_3")]
+    /// Create new CSO damping parameters
+    pub fn new_cso_damping(s6: f64, s9: f64, a1: f64, a2: f64, a3: f64, a4: f64, alp: f64) -> Self {
+        Self::new_cso_damping_f(s6, s9, a1, a2, a3, a4, alp).unwrap()
+    }
+
+    #[cfg(feature = "api-v1_3")]
+    /// Load CSO damping parameters from internal storage (failable)
+    pub fn load_cso_damping_f(method: &str, atm: bool) -> Result<Self, DFTD3Error> {
+        let mut error = DFTD3Error::new();
+        let token = std::ffi::CString::new(method).unwrap();
+        let ptr = unsafe { ffi::dftd3_load_cso_damping(error.get_c_ptr(), token.into_raw(), atm) };
+        match error.check() {
+            true => Err(error),
+            false => Ok(Self { ptr }),
+        }
+    }
+
+    #[cfg(feature = "api-v1_3")]
+    /// Load CSO damping parameters from internal storage
+    pub fn load_cso_damping(method: &str, atm: bool) -> Self {
+        Self::load_cso_damping_f(method, atm).unwrap()
+    }
 }
 
 /* #endregion */
@@ -581,7 +625,8 @@ impl DFTD3Param {
 ///
 /// # Arguments
 ///
-/// - `version` - DFT-D3 variant (`d3bj`, `d3zero`, `d3bjm`, `d3zerom`, `d3op`)
+/// - `version` - DFT-D3 variant (`d3bj`, `d3zero`, `d3bjm`, `d3zerom`, `d3op`,
+///   `d3cso`)
 /// - `method` - xc-functional name (e.g. `pbe0`, `b3lyp`, etc.)
 /// - `atm` - use three-body correction (true) or two-body correction (false)
 ///
@@ -591,7 +636,8 @@ impl DFTD3Param {
 /// - `d3zero`: zero damping;
 /// - `d3bjm`: modified rational damping;
 /// - `d3zerom`: modified zero damping;
-/// - `d3op`: optimized power damping.
+/// - `d3op`: optimized power damping;
+/// - `d3cso`: C6-scaled only (CSO) damping.
 ///
 /// # Notes
 ///
@@ -600,7 +646,8 @@ impl DFTD3Param {
 /// - [`DFTD3ZeroDampingParam`] for zero damping;
 /// - [`DFTD3ModifiedRationalDampingParam`] for modified rational damping;
 /// - [`DFTD3ModifiedZeroDampingParam`] for modified zero damping;
-/// - [`DFTD3OptimizedPowerDampingParam`] for optimized power damping.
+/// - [`DFTD3OptimizedPowerDampingParam`] for optimized power damping;
+/// - [`DFTD3CSODampingParam`] for C6-scaled only (CSO) damping.
 ///
 /// You may also check [`DFTD3Param`], but note that this struct is somehow
 /// low-level API, so use it with more care.
@@ -635,6 +682,12 @@ pub fn dftd3_load_param_f(
         #[cfg(not(feature = "api-v0_5"))]
         "d3op" | "op" => {
             Err(DFTD3Error::Rust(format!("DFTD3 version {} requires api-v0_5 feature", version)))
+        },
+        #[cfg(feature = "api-v1_3")]
+        "d3cso" | "cso" => DFTD3Param::load_cso_damping_f(method, atm),
+        #[cfg(not(feature = "api-v1_3"))]
+        "d3cso" | "cso" => {
+            Err(DFTD3Error::Rust(format!("DFTD3 version {} requires api-v1_3 feature", version)))
         },
         _ => Err(DFTD3Error::Rust(format!("Unknown DFTD3 version: {}", version))),
     }
@@ -858,6 +911,51 @@ impl DFTD3ParamAPI for DFTD3OptimizedPowerDampingParam {
     }
 }
 
+#[cfg(feature = "api-v1_3")]
+/// CSO (C6-scaled only) damping parameters.
+///
+/// This damping scheme uses a sigmoid-based damping function that scales
+/// the C6 coefficients based on the interatomic distances. It provides
+/// smooth damping behavior particularly suited for certain functional types
+/// [^schroeder2015].
+///
+/// The damping function uses a sigmoid-like form that depends on four
+/// parameters (a1, a2, a3, a4) controlling the shape of the damping curve.
+///
+/// [^schroeder2015]: Schröder, H.; Creon, A.; Schwabe, T. Reformulation of the D3 (Becke–Johnson) Dispersion Correction without Resorting to Higher than C6 Dispersion Coefficients. *J. Chem. Theory Comput.* **2015**, *11* (7), 3163–3170. https://doi.org/10.1021/acs.jctc.5b00400.
+#[doc = include_str!("damping_param_usage.md")]
+#[derive(Builder, Debug, Clone)]
+#[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
+pub struct DFTD3CSODampingParam {
+    #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
+    pub s6: f64,
+    #[builder(default = 1.0)]
+    #[doc = r"optional, default 1.0"]
+    pub s9: f64,
+    pub a1: f64,
+    #[builder(default = 2.5)]
+    #[doc = r"optional, default 2.5"]
+    pub a2: f64,
+    #[builder(default = 0.0)]
+    #[doc = r"optional, default 0.0"]
+    pub a3: f64,
+    #[builder(default = 6.25)]
+    #[doc = r"optional, default 6.25"]
+    pub a4: f64,
+    #[builder(default = 14.0)]
+    #[doc = r"optional, default 14.0"]
+    pub alp: f64,
+}
+
+#[cfg(feature = "api-v1_3")]
+impl DFTD3ParamAPI for DFTD3CSODampingParam {
+    fn new_param_f(self) -> Result<DFTD3Param, DFTD3Error> {
+        let Self { s6, s9, a1, a2, a3, a4, alp } = self;
+        DFTD3Param::new_cso_damping_f(s6, s9, a1, a2, a3, a4, alp)
+    }
+}
+
 #[cfg(feature = "api-v0_4")]
 #[duplicate_item(
      DampingParam                        load_damping_f                ;
@@ -902,6 +1000,30 @@ impl DampingParamBuilder {
 #[duplicate_item(
     DampingParamBuilder;
     [DFTD3OptimizedPowerDampingParamBuilder];
+)]
+impl DampingParamBuilder {
+    pub fn init(self) -> DFTD3Param {
+        self.init_f().unwrap()
+    }
+
+    pub fn init_f(self) -> Result<DFTD3Param, DFTD3Error> {
+        self.build()?.new_param_f()
+    }
+}
+#[cfg(feature = "api-v1_3")]
+#[duplicate_item(
+     DampingParam                        load_damping_f                ;
+    [DFTD3CSODampingParam             ] [load_cso_damping_f           ];
+)]
+impl DFTD3LoadParamAPI for DampingParam {
+    fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error> {
+        DFTD3Param::load_damping_f(method, atm)
+    }
+}
+#[cfg(feature = "api-v1_3")]
+#[duplicate_item(
+    DampingParamBuilder;
+    [DFTD3CSODampingParamBuilder];
 )]
 impl DampingParamBuilder {
     pub fn init(self) -> DFTD3Param {
@@ -1240,5 +1362,43 @@ mod tests {
         println!("Dispersion energy: {}", energy);
         println!("Dispersion gradient: {:?}", grad);
         println!("Dispersion sigma: {:?}", sigma);
+    }
+
+    #[cfg(feature = "api-v1_3")]
+    #[test]
+    fn test_cso_damping_load() {
+        let numbers = vec![1, 1];
+        let positions = vec![0.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+        let model = DFTD3Model::new(&numbers, &positions, None, None);
+        // Load CSO damping for B3LYP
+        let param = DFTD3Param::load_cso_damping("B3LYP", false);
+        let (energy, grad, sigma) = model.get_dispersion(&param, true).into();
+        println!("CSO dispersion energy: {}", energy);
+        println!("CSO dispersion gradient: {:?}", grad);
+        println!("CSO dispersion sigma: {:?}", sigma);
+    }
+
+    #[cfg(feature = "api-v1_3")]
+    #[test]
+    fn test_cso_damping_custom() {
+        let numbers = vec![1, 1];
+        let positions = vec![0.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+        let model = DFTD3Model::new(&numbers, &positions, None, None);
+        // Create custom CSO damping parameters using builder
+        let param = DFTD3CSODampingParamBuilder::default().a1(0.86).init();
+        let (energy, _, _) = model.get_dispersion(&param, false).into();
+        println!("Custom CSO dispersion energy: {}", energy);
+    }
+
+    #[cfg(feature = "api-v1_3")]
+    #[test]
+    fn test_dftd3_load_param_cso() {
+        // Test loading via dftd3_load_param function
+        let param = dftd3_load_param("d3cso", "B3LYP", false);
+        let numbers = vec![1, 1];
+        let positions = vec![0.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+        let model = DFTD3Model::new(&numbers, &positions, None, None);
+        let (energy, _, _) = model.get_dispersion(&param, false).into();
+        println!("d3cso B3LYP dispersion energy: {}", energy);
     }
 }

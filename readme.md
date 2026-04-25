@@ -2,7 +2,7 @@
 
 This project contains simple-dftd3 FFI bindings, wrapper and build-from-source.
 
-Current binding of simple-dftd3: [bd59f81](https://github.com/dftd3/simple-dftd3/commit/bd59f81e9f3ab3cf383e4699e1dda03dce5d9845) (after [![v1.2.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.2.1))
+Current binding of simple-dftd3: [![v1.3.0](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.3.0)
 
 Source code of simple-dftd3 is available on [github](https://github.com/dftd3/simple-dftd3).
 
@@ -16,11 +16,11 @@ This crate contains simple-dftd3 FFI bindings and wrapper.
 |--|--|
 | Crate | [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://crates.io/crates/dftd3) |
 | API Document | [![API Documentation](https://docs.rs/dftd3/badge.svg)](https://docs.rs/dftd3) |
-| FFI Binding | [bd59f81](https://github.com/dftd3/simple-dftd3/commit/bd59f81e9f3ab3cf383e4699e1dda03dce5d9845) after [![v1.2.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.2.1) |
+| FFI Binding | [![v1.3.0](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.3.0) |
 
 ### Cargo features of `dftd3`
 
-- **`gcp`**: Support of geometric counterpoise correction. Please note that this is not available in latest stable release of simple-dftd3 (at the time writing this readme, is v1.2.1). Unless you build simple-dftd3 from git repository, you may not use this feature (especially installed simple-dftd3 from conda or similar).
+- **`gcp`**: Support of geometric counterpoise correction. Please note that this is not available in latest stable release of simple-dftd3 (at the time writing this readme, is v1.3.0). Unless you build simple-dftd3 from git repository, you may not use this feature (especially installed simple-dftd3 from conda or similar).
 
 ### Example: r2SCAN with D3(BJ)
 
@@ -35,15 +35,15 @@ let numbers = vec![6, 6, 6, 6, 6, 6, 53, 1, 1, 1, 1, 1, 16, 1, 6, 1, 1, 1];
 #[rustfmt::skip]
 let positions = vec![
     -0.755422531,  -0.796459123,  -1.023590391,
-        0.634274834,  -0.880017014,  -1.075233285,
-        1.406955202,   0.199695367,  -0.653144334,
-        0.798863737,   1.361204515,  -0.180597909,
+     0.634274834,  -0.880017014,  -1.075233285,
+     1.406955202,   0.199695367,  -0.653144334,
+     0.798863737,   1.361204515,  -0.180597909,
     -0.593166787,   1.434312023,  -0.133597923,
     -1.376239198,   0.359205222,  -0.553258516,
     -1.514344238,   3.173268101,   0.573601106,
-        1.110906949,  -1.778801728,  -1.440619836,
-        1.399172302,   2.197767355,   0.147412751,
-        2.486417780,   0.142466525,  -0.689380574,
+     1.110906949,  -1.778801728,  -1.440619836,
+     1.399172302,   2.197767355,   0.147412751,
+     2.486417780,   0.142466525,  -0.689380574,
     -2.454252250,   0.422581120,  -0.512807958,
     -1.362353593,  -1.630564523,  -1.348743149,
     -3.112683203,   6.289227834,   1.226984439,
@@ -124,7 +124,7 @@ If you have not compiled `s-dftd3` library, you may try out cargo feature `build
 
     CMake configurable variables (can be defined as environment variables):
     - `DFTD3_SRC`: git repository source directory or URL;
-    - `DFTD3_VER`: version of DFT-D4 (default v1.2.1);
+    - `DFTD3_VER`: version of DFT-D3 (default v1.3.0);
 
 - **`static`**: This will link static libary instead of dynamic one. Please note that 1. static linking may require additional Fortran and OpenMP linking, which is not provided in this crate; 2. staticly linking LGPL-3.0 license may require your project to be GPL-3.0.
 

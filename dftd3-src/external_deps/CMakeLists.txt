@@ -27,7 +27,7 @@ endif()
 if(DFTD3_VER)
     message(STATUS "User specified version of library (s-dftd3): ${DFTD3_VER}")
 else()
-    set(DFTD3_VER v1.2.1)
+    set(DFTD3_VER v1.3.0)
     message(STATUS "Download version of library (s-dftd3): ${DFTD3_VER}")
 endif()
 

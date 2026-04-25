@@ -6,8 +6,9 @@
 //! All functions are available at runtime.
 
 use super::*;
+use core::ffi::{c_char, c_int};
 
-pub unsafe fn dftd3_get_version() -> ::core::ffi::c_int {
+pub unsafe fn dftd3_get_version() -> c_int {
     dyload_lib().dftd3_get_version.unwrap()()
 }
 
@@ -15,15 +16,11 @@ pub unsafe fn dftd3_new_error() -> dftd3_error {
     dyload_lib().dftd3_new_error.unwrap()()
 }
 
-pub unsafe fn dftd3_check_error(arg1: dftd3_error) -> ::core::ffi::c_int {
+pub unsafe fn dftd3_check_error(arg1: dftd3_error) -> c_int {
     dyload_lib().dftd3_check_error.unwrap()(arg1)
 }
 
-pub unsafe fn dftd3_get_error(
-    arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
-    arg3: *const ::core::ffi::c_int,
-) {
+pub unsafe fn dftd3_get_error(arg1: dftd3_error, arg2: *mut c_char, arg3: *const c_int) {
     dyload_lib().dftd3_get_error.unwrap()(arg1, arg2, arg3)
 }
 
@@ -33,8 +30,8 @@ pub unsafe fn dftd3_delete_error(arg1: *mut dftd3_error) {
 
 pub unsafe fn dftd3_new_structure(
     arg1: dftd3_error,
-    arg2: ::core::ffi::c_int,
-    arg3: *const ::core::ffi::c_int,
+    arg2: c_int,
+    arg3: *const c_int,
     arg4: *const f64,
     arg5: *const f64,
     arg6: *const bool,
@@ -87,7 +84,7 @@ pub unsafe fn dftd3_new_zero_damping(
 
 pub unsafe fn dftd3_load_zero_damping(
     arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
+    arg2: *mut c_char,
     arg3: bool,
 ) -> dftd3_param {
     dyload_lib().dftd3_load_zero_damping.unwrap()(arg1, arg2, arg3)
@@ -107,7 +104,7 @@ pub unsafe fn dftd3_new_rational_damping(
 
 pub unsafe fn dftd3_load_rational_damping(
     arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
+    arg2: *mut c_char,
     arg3: bool,
 ) -> dftd3_param {
     dyload_lib().dftd3_load_rational_damping.unwrap()(arg1, arg2, arg3)
@@ -128,7 +125,7 @@ pub unsafe fn dftd3_new_mzero_damping(
 
 pub unsafe fn dftd3_load_mzero_damping(
     arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
+    arg2: *mut c_char,
     arg3: bool,
 ) -> dftd3_param {
     dyload_lib().dftd3_load_mzero_damping.unwrap()(arg1, arg2, arg3)
@@ -148,7 +145,7 @@ pub unsafe fn dftd3_new_mrational_damping(
 
 pub unsafe fn dftd3_load_mrational_damping(
     arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
+    arg2: *mut c_char,
     arg3: bool,
 ) -> dftd3_param {
     dyload_lib().dftd3_load_mrational_damping.unwrap()(arg1, arg2, arg3)
@@ -171,7 +168,7 @@ pub unsafe fn dftd3_new_optimizedpower_damping(
 
 pub unsafe fn dftd3_load_optimizedpower_damping(
     arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
+    arg2: *mut c_char,
     arg3: bool,
 ) -> dftd3_param {
     dyload_lib().dftd3_load_optimizedpower_damping.unwrap()(arg1, arg2, arg3)
@@ -192,7 +189,7 @@ pub unsafe fn dftd3_new_cso_damping(
 
 pub unsafe fn dftd3_load_cso_damping(
     arg1: dftd3_error,
-    arg2: *mut ::core::ffi::c_char,
+    arg2: *mut c_char,
     arg3: bool,
 ) -> dftd3_param {
     dyload_lib().dftd3_load_cso_damping.unwrap()(arg1, arg2, arg3)
@@ -205,8 +202,8 @@ pub unsafe fn dftd3_delete_param(arg1: *mut dftd3_param) {
 pub unsafe fn dftd3_load_gcp_param(
     arg1: dftd3_error,
     arg2: dftd3_structure,
-    arg3: *mut ::core::ffi::c_char,
-    arg4: *mut ::core::ffi::c_char,
+    arg3: *mut c_char,
+    arg4: *mut c_char,
 ) -> dftd3_gcp {
     dyload_lib().dftd3_load_gcp_param.unwrap()(arg1, arg2, arg3, arg4)
 }

@@ -194,6 +194,13 @@ def dyload_fn_split(node):
     return result
 
 
+def normalize_ffi_types(text):
+    """Replace ::core::ffi::c_int and ::core::ffi::c_char with short names."""
+    text = text.replace("::core::ffi::c_int", "c_int")
+    text = text.replace("::core::ffi::c_char", "c_char")
+    return text
+
+
 def dyload_main(token):
     """
     Generate dynamic loading files from bindgen output.
@@ -224,10 +231,10 @@ def dyload_main(token):
 
         return_type_string = ""
         if dict_fn["return_type"] is not None:
-            return_type_string = " -> " + dict_fn["return_type"].text.decode("utf8")
+            return_type_string = " -> " + normalize_ffi_types(dict_fn["return_type"].text.decode("utf8"))
 
         nodes_para = [n for n in dict_fn["parameters"].children if n.type == "parameter"]
-        parameters = "(" + ", ".join([n.text.decode("utf8") for n in nodes_para]) + ")"
+        parameters = "(" + ", ".join([normalize_ffi_types(n.text.decode("utf8")) for n in nodes_para]) + ")"
         parameters_called = ", ".join([n.children[0].text.decode("utf8") for n in nodes_para])
 
         part_dyload_struct = f"""
@@ -272,6 +279,7 @@ def dyload_main(token):
 //! is not found in the loaded library.
 
 use super::*;
+use core::ffi::{{c_char, c_int}};
 
 pub struct DyLoadLib {{
     pub __libraries: Vec<libloading::Library>,
@@ -315,6 +323,7 @@ impl DyLoadLib {{
 //! All functions are available at runtime.
 
 use super::*;
+use core::ffi::{{c_char, c_int}};
 
 {token_dyload_compatible}
     """

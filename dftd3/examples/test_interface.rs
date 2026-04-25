@@ -45,6 +45,7 @@ fn model(numbers: Vec<usize>, positions: Vec<f64>) -> DFTD3Model {
 }
 
 // Tests for parameter constructors
+#[cfg(feature = "api-v0_4")]
 #[test]
 fn test_rational_damping_noargs() {
     // Check constructor of damping parameters for insufficient arguments
@@ -60,6 +61,7 @@ fn test_rational_damping_noargs() {
     assert!(builder.build().is_err());
 }
 
+#[cfg(feature = "api-v0_4")]
 #[test]
 fn test_zero_damping_noargs() {
     // Check constructor of damping parameters for insufficient arguments
@@ -72,6 +74,7 @@ fn test_zero_damping_noargs() {
     assert!(builder.build().is_err());
 }
 
+#[cfg(feature = "api-v0_4")]
 #[test]
 fn test_modified_rational_damping_noargs() {
     // Check constructor of damping parameters for insufficient arguments
@@ -87,6 +90,7 @@ fn test_modified_rational_damping_noargs() {
     assert!(builder.build().is_err());
 }
 
+#[cfg(feature = "api-v0_4")]
 #[test]
 fn test_modified_zero_damping_noargs() {
     // Check constructor of damping parameters for insufficient arguments
@@ -102,6 +106,7 @@ fn test_modified_zero_damping_noargs() {
     assert!(builder.build().is_err());
 }
 
+#[cfg(feature = "api-v0_5")]
 #[test]
 fn test_optimized_power_damping_noargs() {
     // Check constructor of damping parameters for insufficient arguments
@@ -154,6 +159,7 @@ fn test_structure(numbers: Vec<usize>, positions: Vec<f64>) {
 }
 
 // D3 tests
+#[cfg(feature = "api-v0_4")]
 #[rstest]
 #[case(true, -0.029489232932494884)]
 #[case(false, -0.029589132634178342)]
@@ -163,6 +169,7 @@ fn test_pbe0_d3_bj(model: DFTD3Model, #[case] atm: bool, #[case] expected: f64) 
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[cfg(feature = "api-v0_4")]
 #[rstest]
 #[case(true, -0.022714272555175656)]
 #[case(false, -0.022814172019166058)]
@@ -172,6 +179,7 @@ fn test_b3lyp_d3_zero(model: DFTD3Model, #[case] atm: bool, #[case] expected: f6
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[cfg(feature = "api-v0_4")]
 #[rstest]
 #[case(true, -0.06327406660942464)]
 #[case(false, -0.06337396631110809)]
@@ -181,6 +189,7 @@ fn test_pbe_d3_bjm(model: DFTD3Model, #[case] atm: bool, #[case] expected: f64) 
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[cfg(feature = "api-v0_4")]
 #[rstest]
 #[case(true, -0.026013316869036292)]
 #[case(false, -0.026113216333026695)]
@@ -190,6 +199,7 @@ fn test_bp_d3_zerom(model: DFTD3Model, #[case] atm: bool, #[case] expected: f64)
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[cfg(feature = "api-v0_5")]
 #[rstest]
 #[case(true, -0.07681029606751344)]
 #[case(false, -0.07691018779028679)]
@@ -223,6 +233,7 @@ fn test_gcp_3c(
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[cfg(feature = "api-v0_5")]
 fn test_pair_resolved() {
     let thr = 1.0e-8;
 
@@ -286,10 +297,12 @@ fn test_pair_resolved() {
     });
 }
 
+#[cfg(feature = "api-v0_5")]
 fn main() {
     test_pair_resolved();
 }
 
+#[cfg(feature = "api-v0_5")]
 #[test]
 fn test() {
     test_pair_resolved();

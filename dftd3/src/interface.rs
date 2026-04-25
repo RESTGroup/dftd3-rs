@@ -331,6 +331,7 @@ impl Drop for DFTD3Param {
 }
 
 impl DFTD3Param {
+    #[cfg(feature = "api-v0_4")]
     /// Create new zero damping parameters (failable)
     pub fn new_zero_damping_f(
         s6: f64,
@@ -349,11 +350,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new zero damping parameters
     pub fn new_zero_damping(s6: f64, s8: f64, s9: f64, rs6: f64, rs8: f64, alp: f64) -> Self {
         Self::new_zero_damping_f(s6, s8, s9, rs6, rs8, alp).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load zero damping parameters from internal storage (failable)
     pub fn load_zero_damping_f(method: &str, atm: bool) -> Result<Self, DFTD3Error> {
         let mut error = DFTD3Error::new();
@@ -365,11 +368,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load zero damping parameters from internal storage
     pub fn load_zero_damping(method: &str, atm: bool) -> Self {
         Self::load_zero_damping_f(method, atm).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new rational damping parameters (failable)
     pub fn new_rational_damping_f(
         s6: f64,
@@ -388,11 +393,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new rational damping parameters
     pub fn new_rational_damping(s6: f64, s8: f64, s9: f64, a1: f64, a2: f64, alp: f64) -> Self {
         Self::new_rational_damping_f(s6, s8, s9, a1, a2, alp).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load rational damping parameters from internal storage (failable)
     pub fn load_rational_damping_f(method: &str, atm: bool) -> Result<Self, DFTD3Error> {
         let mut error = DFTD3Error::new();
@@ -405,11 +412,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load rational damping parameters from internal storage
     pub fn load_rational_damping(method: &str, atm: bool) -> Self {
         Self::load_rational_damping_f(method, atm).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new modified zero damping parameters (failable)
     pub fn new_mzero_damping_f(
         s6: f64,
@@ -430,6 +439,7 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new modified zero damping parameters
     pub fn new_mzero_damping(
         s6: f64,
@@ -443,6 +453,7 @@ impl DFTD3Param {
         Self::new_mzero_damping_f(s6, s8, s9, rs6, rs8, alp, bet).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load modified zero damping parameters from internal storage (failable)
     pub fn load_mzero_damping_f(method: &str, atm: bool) -> Result<Self, DFTD3Error> {
         let mut error = DFTD3Error::new();
@@ -455,11 +466,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load modified zero damping parameters from internal storage
     pub fn load_mzero_damping(method: &str, atm: bool) -> Self {
         Self::load_mzero_damping_f(method, atm).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new modified rational damping parameters (failable)
     pub fn new_mrational_damping_f(
         s6: f64,
@@ -478,11 +491,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Create new modified rational damping parameters
     pub fn new_mrational_damping(s6: f64, s8: f64, s9: f64, a1: f64, a2: f64, alp: f64) -> Self {
         Self::new_mrational_damping_f(s6, s8, s9, a1, a2, alp).unwrap()
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load modified rational damping parameters from internal storage
     /// (failable)
     pub fn load_mrational_damping_f(method: &str, atm: bool) -> Result<Self, DFTD3Error> {
@@ -496,11 +511,13 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_4")]
     /// Load modified rational damping parameters from internal storage
     pub fn load_mrational_damping(method: &str, atm: bool) -> Self {
         Self::load_mrational_damping_f(method, atm).unwrap()
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Create new optimized damping parameters (failable)
     pub fn new_optimizedpower_damping_f(
         s6: f64,
@@ -521,6 +538,7 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Create new optimized damping parameters
     pub fn new_optimizedpower_damping(
         s6: f64,
@@ -534,6 +552,7 @@ impl DFTD3Param {
         Self::new_optimizedpower_damping_f(s6, s8, s9, a1, a2, alp, bet).unwrap()
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Load optimized damping parameters from internal storage (failable)
     pub fn load_optimizedpower_damping_f(method: &str, atm: bool) -> Result<Self, DFTD3Error> {
         let mut error = DFTD3Error::new();
@@ -547,6 +566,7 @@ impl DFTD3Param {
         }
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Load optimized damping parameters from internal storage
     pub fn load_optimizedpower_damping(method: &str, atm: bool) -> Self {
         Self::load_optimizedpower_damping_f(method, atm).unwrap()
@@ -588,10 +608,12 @@ impl DFTD3Param {
 /// Please note that parameters object can be retrived, only means that we can
 /// use these parameters for program computation, and does not necessarily means
 /// that `s6`, `s8`, etc is available and can be printed.
+#[cfg(feature = "api-v0_4")]
 pub fn dftd3_load_param(version: &str, method: &str, atm: bool) -> DFTD3Param {
     dftd3_load_param_f(version, method, atm).unwrap()
 }
 
+#[cfg(feature = "api-v0_4")]
 /// Load damping parameters by functional and DFT-D3 versions.
 ///
 /// # See also
@@ -608,7 +630,12 @@ pub fn dftd3_load_param_f(
         "d3zero" | "zero" => DFTD3Param::load_zero_damping_f(method, atm),
         "d3bjm" | "d3mbj" | "bjm" | "mbj" => DFTD3Param::load_mrational_damping_f(method, atm),
         "d3zerom" | "d3mzero" | "zerom" | "mzero" => DFTD3Param::load_mzero_damping_f(method, atm),
+        #[cfg(feature = "api-v0_5")]
         "d3op" | "op" => DFTD3Param::load_optimizedpower_damping_f(method, atm),
+        #[cfg(not(feature = "api-v0_5"))]
+        "d3op" | "op" => {
+            Err(DFTD3Error::Rust(format!("DFTD3 version {} requires api-v0_5 feature", version)))
+        },
         _ => Err(DFTD3Error::Rust(format!("Unknown DFTD3 version: {}", version))),
     }
 }
@@ -624,6 +651,7 @@ pub trait DFTD3ParamAPI {
     }
 }
 
+#[cfg(feature = "api-v0_4")]
 /// Trait for loading damping parameters.
 pub trait DFTD3LoadParamAPI {
     fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error>;
@@ -632,6 +660,7 @@ pub trait DFTD3LoadParamAPI {
     }
 }
 
+#[cfg(feature = "api-v0_4")]
 /// Rational damping function for DFT-D3.
 ///
 /// The original scheme was proposed by Becke and Johnson [^becke2005]
@@ -667,6 +696,7 @@ pub struct DFTD3RationalDampingParam {
     pub alp: f64,
 }
 
+#[cfg(feature = "api-v0_4")]
 impl DFTD3ParamAPI for DFTD3RationalDampingParam {
     fn new_param_f(self) -> Result<DFTD3Param, DFTD3Error> {
         let Self { s6, s8, s9, a1, a2, alp } = self;
@@ -674,6 +704,7 @@ impl DFTD3ParamAPI for DFTD3RationalDampingParam {
     }
 }
 
+#[cfg(feature = "api-v0_4")]
 /// Original DFT-D3 damping function with variant.
 ///
 /// Original DFT-D3 damping function [^grimme2010], based on a variant proposed
@@ -706,6 +737,7 @@ pub struct DFTD3ZeroDampingParam {
     pub alp: f64,
 }
 
+#[cfg(feature = "api-v0_4")]
 impl DFTD3ParamAPI for DFTD3ZeroDampingParam {
     fn new_param_f(self) -> Result<DFTD3Param, DFTD3Error> {
         let Self { s6, s8, s9, rs6, rs8, alp } = self;
@@ -713,6 +745,7 @@ impl DFTD3ParamAPI for DFTD3ZeroDampingParam {
     }
 }
 
+#[cfg(feature = "api-v0_4")]
 /// Modified version of the rational damping parameters.
 ///
 /// The functional form of the damping function is **unmodified** with respect
@@ -738,6 +771,7 @@ pub struct DFTD3ModifiedRationalDampingParam {
     pub alp: f64,
 }
 
+#[cfg(feature = "api-v0_4")]
 impl DFTD3ParamAPI for DFTD3ModifiedRationalDampingParam {
     fn new_param_f(self) -> Result<DFTD3Param, DFTD3Error> {
         let Self { s6, s8, s9, a1, a2, alp } = self;
@@ -745,6 +779,7 @@ impl DFTD3ParamAPI for DFTD3ModifiedRationalDampingParam {
     }
 }
 
+#[cfg(feature = "api-v0_4")]
 /// Modified zero damping function for DFT-D3.
 ///
 /// This scheme [^smith2016] adds an additional offset parameter to the zero
@@ -776,6 +811,7 @@ pub struct DFTD3ModifiedZeroDampingParam {
     pub bet: f64,
 }
 
+#[cfg(feature = "api-v0_4")]
 impl DFTD3ParamAPI for DFTD3ModifiedZeroDampingParam {
     fn new_param_f(self) -> Result<DFTD3Param, DFTD3Error> {
         let Self { s6, s8, s9, rs6, rs8, alp, bet } = self;
@@ -783,6 +819,7 @@ impl DFTD3ParamAPI for DFTD3ModifiedZeroDampingParam {
     }
 }
 
+#[cfg(feature = "api-v0_5")]
 /// Optimized power version of the rational damping parameters.
 ///
 /// The functional form of the damping function is modified by adding an
@@ -813,6 +850,7 @@ pub struct DFTD3OptimizedPowerDampingParam {
     pub bet: f64,
 }
 
+#[cfg(feature = "api-v0_5")]
 impl DFTD3ParamAPI for DFTD3OptimizedPowerDampingParam {
     fn new_param_f(self) -> Result<DFTD3Param, DFTD3Error> {
         let Self { s6, s8, s9, a1, a2, alp, bet } = self;
@@ -820,12 +858,22 @@ impl DFTD3ParamAPI for DFTD3OptimizedPowerDampingParam {
     }
 }
 
+#[cfg(feature = "api-v0_4")]
 #[duplicate_item(
      DampingParam                        load_damping_f                ;
     [DFTD3RationalDampingParam        ] [load_rational_damping_f      ];
     [DFTD3ZeroDampingParam            ] [load_zero_damping_f          ];
     [DFTD3ModifiedRationalDampingParam] [load_mrational_damping_f     ];
     [DFTD3ModifiedZeroDampingParam    ] [load_mzero_damping_f         ];
+)]
+impl DFTD3LoadParamAPI for DampingParam {
+    fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error> {
+        DFTD3Param::load_damping_f(method, atm)
+    }
+}
+#[cfg(feature = "api-v0_5")]
+#[duplicate_item(
+     DampingParam                        load_damping_f                ;
     [DFTD3OptimizedPowerDampingParam  ] [load_optimizedpower_damping_f];
 )]
 impl DFTD3LoadParamAPI for DampingParam {
@@ -833,12 +881,26 @@ impl DFTD3LoadParamAPI for DampingParam {
         DFTD3Param::load_damping_f(method, atm)
     }
 }
+#[cfg(feature = "api-v0_4")]
 #[duplicate_item(
     DampingParamBuilder;
     [DFTD3RationalDampingParamBuilder];
     [DFTD3ZeroDampingParamBuilder];
     [DFTD3ModifiedRationalDampingParamBuilder];
     [DFTD3ModifiedZeroDampingParamBuilder];
+)]
+impl DampingParamBuilder {
+    pub fn init(self) -> DFTD3Param {
+        self.init_f().unwrap()
+    }
+
+    pub fn init_f(self) -> Result<DFTD3Param, DFTD3Error> {
+        self.build()?.new_param_f()
+    }
+}
+#[cfg(feature = "api-v0_5")]
+#[duplicate_item(
+    DampingParamBuilder;
     [DFTD3OptimizedPowerDampingParamBuilder];
 )]
 impl DampingParamBuilder {
@@ -878,6 +940,7 @@ impl From<DFTD3Output> for (f64, Option<Vec<f64>>, Option<Vec<f64>>) {
     }
 }
 
+#[cfg(feature = "api-v0_5")]
 /// DFTD3 pairwise returned result.
 ///
 /// This struct implements `From` trait to convert to tuple. So you can use this
@@ -893,6 +956,7 @@ pub struct DFTD3PairwiseOutput {
     pub pair_energy3: Vec<f64>,
 }
 
+#[cfg(feature = "api-v0_5")]
 impl From<DFTD3PairwiseOutput> for (Vec<f64>, Vec<f64>) {
     fn from(output: DFTD3PairwiseOutput) -> Self {
         (output.pair_energy2, output.pair_energy3)
@@ -956,6 +1020,7 @@ impl DFTD3Model {
         self.get_dispersion_f(param, eval_grad).unwrap()
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Evaluate the pairwise dispersion energy.
     ///
     /// Output `DFTD3PairwiseOutput` contains
@@ -966,6 +1031,7 @@ impl DFTD3Model {
         self.get_pairwise_dispersion_f(param).unwrap()
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Set realspace cutoff for evaluation of interactions (in Bohr)
     pub fn set_realspace_cutoff(&self, r0: f64, r1: f64, r2: f64) {
         self.set_realspace_cutoff_f(r0, r1, r2).unwrap()
@@ -1050,6 +1116,7 @@ impl DFTD3Model {
         }
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Evaluate the pairwise dispersion energy (failable).
     pub fn get_pairwise_dispersion_f(
         &self,
@@ -1077,6 +1144,7 @@ impl DFTD3Model {
         }
     }
 
+    #[cfg(feature = "api-v0_5")]
     /// Set realspace cutoff for evaluation of interactions (in Bohr, failable).
     ///
     /// # See also
@@ -1130,6 +1198,7 @@ impl DFTD3Model {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "api-v0_5")]
     use ffi::dftd3_load_optimizedpower_damping;
 
     use super::*;
@@ -1144,6 +1213,7 @@ mod tests {
         println!("API version: {:?}", dftd3_get_api_version_compact());
     }
 
+    #[cfg(feature = "api-v0_5")]
     #[test]
     fn test_dftd3_error() {
         let mut error = DFTD3Error::new();
@@ -1159,6 +1229,7 @@ mod tests {
         println!("Error message : {}", error.get_message());
     }
 
+    #[cfg(feature = "api-v0_4")]
     #[test]
     fn test_get_dispersion() {
         let numbers = vec![1, 1];

@@ -1,22 +1,160 @@
-"""
-Python script to handle dynamic loading
+# # Generate FFI bindings for simple-dftd3
 
-This is a utility package for dftd3-rs FFI bindings.
-It handles:
-- Splitting `unsafe extern` block from FFI file
-- Creating library struct for dynamic loading
-- Creating FFI-compatible functions for dynamic loading
+# This python file can also be opened by Jupyter notebook with jupytext extension.
 
-This file can also be opened by Jupyter notebook with jupytext extension.
-"""
+# This script generates:
+# - ffi_static.rs: static linking FFI bindings
+# - ffi_dynamic/: dynamic loading module files
 
-from tree_sitter import Language, Parser
-import tree_sitter_rust
-import re
+# User must change `path_repo` to the local path of simple-dftd3 repository.
+
+import subprocess
 import os
 import shutil
-import subprocess
+import re
+from collections import defaultdict
+from tree_sitter import Language, Parser
+import tree_sitter_rust
 
+path_cwd = os.path.abspath(os.getcwd())
+
+# ## Bindgen configuration
+
+# Users may change the following fields for their needs.
+
+# Source code of simple-dftd3
+path_repo = f"{os.getenv('HOME')}/Git-Others/simple-dftd3"
+
+# Path for storing useful header files
+path_header = f"{path_cwd}/../header"
+
+# Path for temporary files
+path_temp = f"{path_cwd}/tmp"
+
+# Path for bindgen crate root
+path_out = f"{path_cwd}/.."
+
+# ## API version configuration
+
+# Available API versions and their cargo feature names
+# Versions are cumulative: api-v0_5 includes api-v0_2, api-v0_3, api-v0_4, api-v0_5 functions
+api_versions = [
+    ("V_0_2", "api-v0_2"),
+    ("V_0_3", "api-v0_3"),
+    ("V_0_4", "api-v0_4"),
+    ("V_0_5", "api-v0_5"),
+    ("V_1_3", "api-v1_3"),
+]
+
+# Default API version (used when no features are specified)
+default_api_version = "api-v0_2"
+
+
+# ## Parse API version information from header
+
+def parse_api_versions(header_content):
+    """Parse the header file to extract function names and their API versions."""
+    version_map = {}
+
+    # Pattern to match function declarations with version suffixes
+    pattern = r'SDFTD3_API_ENTRY\s+\w+\s+SDFTD3_API_CALL\s+(\w+)\s*\([^)]*\)\s*SDFTD3_API_SUFFIX__(\w+);'
+
+    # Single-line matching
+    for match in re.finditer(pattern, header_content, re.MULTILINE):
+        func_name = match.group(1)
+        version_suffix = match.group(2)
+        version_map[func_name] = version_suffix
+
+    # Multi-line declarations: join lines and search again
+    joined_content = header_content.replace('\n', ' ')
+    for match in re.finditer(pattern, joined_content):
+        func_name = match.group(1)
+        version_suffix = match.group(2)
+        version_map[func_name] = version_suffix
+
+    return version_map
+
+
+# ## Static FFI generation functions
+
+def get_feature_for_version(version_suffix):
+    """Convert version suffix (V_0_2) to cargo feature name (api-v0_2)."""
+    for v_suffix, feature_name in api_versions:
+        if v_suffix == version_suffix:
+            return feature_name
+    return default_api_version
+
+
+def add_version_attributes(token, version_map):
+    """Add #[cfg(feature = "api-vX_Y")] attributes to extern functions."""
+
+    func_cfg_map = {}
+    for func_name, version_suffix in version_map.items():
+        feature = get_feature_for_version(version_suffix)
+        func_cfg_map[func_name] = feature
+
+    lines = token.split('\n')
+    result_lines = []
+    i = 0
+    processed_funcs = set()
+
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        if stripped.startswith('#[doc ='):
+            j = i + 1
+            while j < len(lines) and lines[j].strip().startswith('#[doc ='):
+                j += 1
+
+            if j < len(lines):
+                func_line = lines[j]
+                func_match = re.match(r'\s*pub fn (\w+)\s*\(', func_line)
+                if func_match:
+                    func_name = func_match.group(1)
+                    if func_name in func_cfg_map and func_name not in processed_funcs:
+                        feature = func_cfg_map[func_name]
+                        indent = len(line) - len(line.lstrip())
+                        cfg_line = ' ' * indent + f'#[cfg(feature = "{feature}")]'
+                        result_lines.append(cfg_line)
+                        processed_funcs.add(func_name)
+
+        result_lines.append(line)
+        i += 1
+
+    return '\n'.join(result_lines)
+
+
+def generate_static_ffi(token, version_map):
+    """Generate ffi_static.rs content from bindgen output."""
+    token = token.replace("::core::ffi::", "")
+    token = token.replace("minor + 100", "minor * 100")
+    token = add_version_attributes(token, version_map)
+
+    feature_docs = """//! FFI bindings for simple-dftd3.
+//!
+//! # API Version Features
+//!
+//! This crate provides versioned FFI bindings through cargo features:
+//!
+//! - `api-v0_2`: Base API (default)
+//! - `api-v0_3`: Extends api-v0_2
+//! - `api-v0_4`: Extends api-v0_3, adds damping parameter functions
+//! - `api-v0_5`: Extends api-v0_4, adds optimized power damping and pairwise dispersion
+//! - `api-v1_3`: Full API, adds CSO damping and GCP functions
+//!
+//! Features are cumulative: enabling `api-v0_5` also enables all functions from
+//! earlier versions (api-v0_2, api-v0_3, api-v0_4).
+
+#![allow(non_camel_case_types)]
+
+use core::ffi::{c_char, c_int};
+"""
+
+    return feature_docs + "\n\n" + token
+
+
+# ## Dynamic loading generation functions
 
 def dyload_parse_file(token):
     """Parse the FFI file and extract the extern block."""
@@ -56,26 +194,12 @@ def dyload_fn_split(node):
     return result
 
 
-def dyload_get_cfg_attribute(node, full_token):
-    """Extract cfg attribute preceding a function if present."""
-    node_start = node.start_byte
-    lines_before = full_token[:node_start]
-    cfg_matches = re.findall(r'#\[cfg\(feature = "([^"]+)"\)\]', lines_before)
-    if cfg_matches:
-        return cfg_matches[-1]
-    return None
-
-
 def dyload_main(token):
     """
-    Main function to generate all dynamic loading files.
-
-    For dynamic loading, API version features are ignored - all functions are available.
-    Runtime panic occurs if a function is not found in the loaded library.
+    Generate dynamic loading files from bindgen output.
 
     Returns a dict with keys:
     - ffi_base: base types and imports
-    - ffi_extern: extern function declarations (for reference)
     - dyload_struct: struct with Option<extern fn> fields
     - dyload_initializer: DyLoadLib::new implementation
     - dyload_compatible: wrapper functions calling through dyload_lib()
@@ -84,7 +208,6 @@ def dyload_main(token):
 
     token_ffi_base = token
 
-    # Collect all function nodes from all extern blocks
     nodes_fn = []
     for node_extern in parsed_ffi:
         nodes_fn.extend(dyload_get_ffi_fn(node_extern))
@@ -125,11 +248,9 @@ def dyload_main(token):
         token_dyload_initializer += part_dyload_initializer + "\n"
         token_dyload_compatible += part_dyload_compatible + "\n\n"
 
-    # Generate ffi_base.rs - the base types without extern functions
     for node_extern in parsed_ffi:
         token_ffi_base = dyload_remove_extern(parsed, node_extern)
 
-    # Remove unused imports from ffi_base
     import_pattern = r'use core::ffi::\{c_char, c_int\};'
     token_ffi_base = re.sub(import_pattern, '', token_ffi_base)
 
@@ -151,7 +272,6 @@ def dyload_main(token):
 //! is not found in the loaded library.
 
 use super::*;
-use core::ffi::{{c_char, c_int}};
 
 pub struct DyLoadLib {{
     pub __libraries: Vec<libloading::Library>,
@@ -195,7 +315,6 @@ impl DyLoadLib {{
 //! All functions are available at runtime.
 
 use super::*;
-use core::ffi::{{c_char, c_int}};
 
 {token_dyload_compatible}
     """
@@ -401,49 +520,74 @@ pub use dyload_struct::*;
 """
 
 
-# ## Executable script section
+# ## Main execution
 
-if __name__ == "__main__":
-    # This script reads ffi_static.rs and generates ffi_dynamic module files.
+def main():
+    # Copy necessary headers
+    os.makedirs(path_header, exist_ok=True)
+    os.makedirs(f"{path_out}/src", exist_ok=True)
+    os.makedirs(f"{path_out}/src/ffi_dynamic", exist_ok=True)
 
-    path_cwd = os.path.abspath(os.getcwd())
-    path_out = f"{path_cwd}/.."
+    for name in ["s-dftd3.h"]:
+        shutil.copy(f"{path_repo}/include/{name}", f"{path_header}")
 
-    # Read ffi_static.rs (generated by perform_bindgen.py)
-    ffi_static_path = f"{path_out}/src/ffi_static.rs"
-    if not os.path.exists(ffi_static_path):
-        print(f"Error: ffi_static.rs not found at {ffi_static_path}")
-        print("Please run perform_bindgen.py first to generate ffi_static.rs")
-        exit(1)
+    # Read header and parse version information
+    header_path = f"{path_header}/s-dftd3.h"
+    with open(header_path, "r") as f:
+        header_content = f.read()
 
-    with open(ffi_static_path, "r") as f:
-        token = f.read()
+    version_map = parse_api_versions(header_content)
 
-    # Generate dynamic loading files
-    dyload_files = dyload_main(token)
+    # Prepare temporary directory
+    shutil.rmtree(path_temp, ignore_errors=True)
+    shutil.copytree(path_header, path_temp)
+    os.chdir(path_temp)
 
-    # Create ffi_dynamic directory
-    ffi_dynamic_dir = f"{path_out}/src/ffi_dynamic"
-    os.makedirs(ffi_dynamic_dir, exist_ok=True)
+    # Run bindgen
+    subprocess.run([
+        "bindgen",
+        "s-dftd3.h", "-o", "ffi.rs",
+        "--allowlist-file", "s-dftd3.h",
+        "--no-layout-tests",
+        "--use-core",
+        "--merge-extern-blocks",
+    ])
 
-    # Write the files
-    with open(f"{ffi_dynamic_dir}/ffi_base.rs", "w") as f:
+    # Read bindgen output
+    with open("ffi.rs", "r") as f:
+        bindgen_output = f.read()
+
+    # Generate static FFI (ffi_static.rs)
+    static_ffi = generate_static_ffi(bindgen_output, version_map)
+    with open(f"{path_out}/src/ffi_static.rs", "w") as f:
+        f.write(static_ffi)
+
+    # Generate dynamic loading files (ffi_dynamic/)
+    dyload_files = dyload_main(bindgen_output)
+
+    with open(f"{path_out}/src/ffi_dynamic/ffi_base.rs", "w") as f:
         f.write(dyload_files["ffi_base"])
 
-    with open(f"{ffi_dynamic_dir}/dyload_struct.rs", "w") as f:
+    with open(f"{path_out}/src/ffi_dynamic/dyload_struct.rs", "w") as f:
         f.write(dyload_files["dyload_struct"])
 
-    with open(f"{ffi_dynamic_dir}/dyload_initializer.rs", "w") as f:
+    with open(f"{path_out}/src/ffi_dynamic/dyload_initializer.rs", "w") as f:
         f.write(dyload_files["dyload_initializer"])
 
-    with open(f"{ffi_dynamic_dir}/dyload_compatible.rs", "w") as f:
+    with open(f"{path_out}/src/ffi_dynamic/dyload_compatible.rs", "w") as f:
         f.write(dyload_files["dyload_compatible"])
 
-    with open(f"{ffi_dynamic_dir}/mod.rs", "w") as f:
+    with open(f"{path_out}/src/ffi_dynamic/mod.rs", "w") as f:
         f.write(DYLOAD_MOD_TEMPLATE)
 
-    # Cargo fmt
+    # Run cargo fmt
     os.chdir(path_out)
     subprocess.run(["cargo", "fmt"])
 
-    print(f"Generated ffi_dynamic module at {ffi_dynamic_dir}")
+    print(f"Generated:")
+    print(f"  - {path_out}/src/ffi_static.rs")
+    print(f"  - {path_out}/src/ffi_dynamic/")
+
+
+if __name__ == "__main__":
+    main()

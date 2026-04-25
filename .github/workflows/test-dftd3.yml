@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test-from-miniconda:
+  test-static-linking:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,5 +19,20 @@ jobs:
           ls /usr/share/miniconda/lib
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
           export DFTD3_DEV=1
-          cargo test
-          cargo test --examples
+          cargo test --no-default-features --features="api-v1_3" -- --nocapture
+          cargo test --no-default-features --features="api-v1_3" -- --nocapture --examples
+
+  test-dynamic-loading:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+      - name: run tests directly
+        run: |
+          cd dftd3
+          conda install dftd3-python -c conda-forge
+          ls /usr/share/miniconda/lib
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
+          export DFTD3_DEV=1
+          cargo test --features="api-v1_3" -- --nocapture
+          cargo test --features="api-v1_3" -- --nocapture --examples

@@ -38,14 +38,3 @@ jobs:
           ls /usr/share/miniconda/lib
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
           cargo test --test "*" -vv -- --nocapture
-
-  dynamic-loading:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
-      - name: run tests directly
-        run: |
-          cd dftd3-src
-          conda install dftd3-python -c conda-forge
-          cargo test --test "*" -vv --features="dftd3/dynamic_loading" -- --nocapture

@@ -1,3 +1,5 @@
+#![cfg(feature = "api-v0_4")]
+
 use dftd3::prelude::*;
 
 fn main_test() {

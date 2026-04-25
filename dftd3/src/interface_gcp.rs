@@ -105,14 +105,23 @@ impl DFTD3GCP {
         basis: &str,
     ) -> Result<Self, DFTD3Error> {
         let mut error = DFTD3Error::new();
-        let token_method = std::ffi::CString::new(method).unwrap();
-        let token_basis = std::ffi::CString::new(basis).unwrap();
+        // Pass null pointer for empty strings, as Fortran's C binding uses
+        // present() check which returns false for null pointers, but true
+        // for non-null pointers (even if pointing to empty string)
+        let token_method = match method.is_empty() {
+            true => None,
+            false => Some(std::ffi::CString::new(method).unwrap()),
+        };
+        let token_basis = match basis.is_empty() {
+            true => None,
+            false => Some(std::ffi::CString::new(basis).unwrap()),
+        };
         let ptr = unsafe {
             ffi::dftd3_load_gcp_param(
                 error.get_c_ptr(),
                 structure.ptr,
-                token_method.into_raw(),
-                token_basis.into_raw(),
+                token_method.as_ref().map_or(std::ptr::null_mut(), |s| s.as_ptr() as *mut _),
+                token_basis.as_ref().map_or(std::ptr::null_mut(), |s| s.as_ptr() as *mut _),
             )
         };
         match error.check() {

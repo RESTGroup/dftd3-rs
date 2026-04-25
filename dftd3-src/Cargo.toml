@@ -11,7 +11,7 @@ categories.workspace = true
 license.workspace = true
 
 [dev-dependencies]
-dftd3 = { path = "../dftd3" }
+dftd3 = { path = "../dftd3", default-features = false, features = ["api-v0_5"] }
 
 [build-dependencies]
 cmake = { version = "0.1" }

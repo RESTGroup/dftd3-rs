@@ -8,6 +8,7 @@
 use std::path::PathBuf;
 
 fn main() {
+    println!("cargo:rerun-if-env-changed=LD_LIBRARY_PATH");
     println!("cargo:rerun-if-env-changed=DFTD3_DEV");
     if std::env::var("DFTD3_DEV").is_ok() {
         std::env::var("LD_LIBRARY_PATH")

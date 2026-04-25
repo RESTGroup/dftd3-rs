@@ -2,6 +2,8 @@
 
 use crate::ffi;
 use derive_builder::{Builder, UninitializedFieldError};
+use serde::{Deserialize, Serialize};
+use serde_inline_default::serde_inline_default;
 use std::ffi::{c_char, c_int, CStr};
 use std::ptr::{null, null_mut};
 use std::result::Result;
@@ -35,6 +37,7 @@ pub enum DFTD3Error {
     C(ffi::dftd3_error),
     Rust(String),
     BuilderError(UninitializedFieldError),
+    ParametersError(String),
 }
 
 impl From<UninitializedFieldError> for DFTD3Error {
@@ -98,6 +101,7 @@ impl DFTD3Error {
             DFTD3Error::BuilderError(ufe) => {
                 format!("Builder error: {:?}", ufe)
             },
+            DFTD3Error::ParametersError(msg) => msg.clone(),
         }
     }
 }
@@ -731,19 +735,23 @@ pub trait DFTD3LoadParamAPI {
 /// [^johnson2006]: Johnson, E. R.; Becke, A. D. A post-hartree-fock model of intermolecular interactions: inclusion of higher-order corrections. *J. Chem. Phys.*, **2006**, *124*(17), 174104. doi: [10.1063/1.2190220](https://dx.doi.org/10.1063/1.2190220).
 /// [^grimme2011]: Grimme, S.; Ehrlich, S.; Goerigk, L. Effect of the damping function in dispersion corrected density functional theory. *J. Comput. Chem.*, **2011**, *32*, 1456–1465. doi: [10.1002/jcc.21759](https://dx.doi.org/10.1002/jcc.21759).
 #[doc = include_str!("damping_param_usage.md")]
-#[derive(Builder, Debug, Clone)]
+#[serde_inline_default]
+#[derive(Builder, Debug, Clone, Deserialize, Serialize)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3RationalDampingParam {
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     pub a2: f64,
     #[builder(default = 14.0)]
+    #[serde_inline_default(14.0)]
     #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }
@@ -770,21 +778,26 @@ impl DFTD3ParamAPI for DFTD3RationalDampingParam {
 /// [^chai2008]: Chai, J.-D.; Head-Gordon, M. Long-range corrected hybrid density functionals with damped atom–atom dispersion corrections. *Phys. Chem. Chem. Phys.*, **2008**, *10*(44), 6615–6620. doi: [10.1039/B810189B](https://dx.doi.org/10.1039/B810189B).
 /// [^grimme2011]: Grimme, S.; Ehrlich, S.; Goerigk, L. Effect of the damping function in dispersion corrected density functional theory. *J. Comput. Chem.*, **2011**, *32*, 1456–1465. doi: [10.1002/jcc.21759](https://dx.doi.org/10.1002/jcc.21759).
 #[doc = include_str!("damping_param_usage.md")]
-#[derive(Builder, Debug, Clone)]
+#[serde_inline_default]
+#[derive(Builder, Debug, Clone, Deserialize, Serialize)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3ZeroDampingParam {
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub rs6: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub rs8: f64,
     #[builder(default = 14.0)]
+    #[serde_inline_default(14.0)]
     #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }
@@ -806,19 +819,23 @@ impl DFTD3ParamAPI for DFTD3ZeroDampingParam {
 ///
 /// [^smith2016]: Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. Revised damping parameters for the D3 dispersion correction to density functional theory. *J. Phys. Chem. Lett.*, **2016**, *7*(12), 2197–2203. doi: [10.1021/acs.jpclett.6b00780](https://dx.doi.org/10.1021/acs.jpclett.6b00780).
 #[doc = include_str!("damping_param_usage.md")]
-#[derive(Builder, Debug, Clone)]
+#[serde_inline_default]
+#[derive(Builder, Debug, Clone, Deserialize, Serialize)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3ModifiedRationalDampingParam {
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     pub a2: f64,
     #[builder(default = 14.0)]
+    #[serde_inline_default(14.0)]
     #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }
@@ -843,21 +860,26 @@ impl DFTD3ParamAPI for DFTD3ModifiedRationalDampingParam {
 ///
 /// [^smith2016]: Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. Revised damping parameters for the D3 dispersion correction to density functional theory. *J. Phys. Chem. Lett.*, **2016**, *7*(12), 2197–2203. doi: [10.1021/acs.jpclett.6b00780](https://dx.doi.org/10.1021/acs.jpclett.6b00780).
 #[doc = include_str!("damping_param_usage.md")]
-#[derive(Builder, Debug, Clone)]
+#[serde_inline_default]
+#[derive(Builder, Debug, Clone, Deserialize, Serialize)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3ModifiedZeroDampingParam {
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub rs6: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub rs8: f64,
     #[builder(default = 14.0)]
+    #[serde_inline_default(14.0)]
     #[doc = r"optional, default 14.0"]
     pub alp: f64,
     pub bet: f64,
@@ -884,19 +906,23 @@ impl DFTD3ParamAPI for DFTD3ModifiedZeroDampingParam {
 ///
 /// [^witte2017]: Witte, J.; Mardirossian, N.; Neaton, J. B.; Head-Gordon, M. Assessing DFT-D3 damping functions across widely used density functionals: Can we do better? *J. Chem. Theory Comput.*, **2017**, *13*(5), 2043–2052. doi: [10.1021/acs.jctc.7b00176](https://dx.doi.org/10.1021/acs.jctc.7b00176).
 #[doc = include_str!("damping_param_usage.md")]
-#[derive(Builder, Debug, Clone)]
+#[serde_inline_default]
+#[derive(Builder, Debug, Clone, Deserialize, Serialize)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3OptimizedPowerDampingParam {
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s6: f64,
     pub s8: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     pub a2: f64,
     #[builder(default = 14.0)]
+    #[serde_inline_default(14.0)]
     #[doc = r"optional, default 14.0"]
     pub alp: f64,
     pub bet: f64,
@@ -923,26 +949,33 @@ impl DFTD3ParamAPI for DFTD3OptimizedPowerDampingParam {
 ///
 /// [^schroeder2015]: Schröder, H.; Creon, A.; Schwabe, T. Reformulation of the D3 (Becke–Johnson) Dispersion Correction without Resorting to Higher than C6 Dispersion Coefficients. *J. Chem. Theory Comput.* **2015**, *11* (7), 3163–3170. https://doi.org/10.1021/acs.jctc.5b00400.
 #[doc = include_str!("damping_param_usage.md")]
-#[derive(Builder, Debug, Clone)]
+#[serde_inline_default]
+#[derive(Builder, Debug, Clone, Deserialize, Serialize)]
 #[builder(pattern = "owned", build_fn(error = "DFTD3Error"))]
 pub struct DFTD3CSODampingParam {
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s6: f64,
     #[builder(default = 1.0)]
+    #[serde_inline_default(1.0)]
     #[doc = r"optional, default 1.0"]
     pub s9: f64,
     pub a1: f64,
     #[builder(default = 2.5)]
+    #[serde_inline_default(2.5)]
     #[doc = r"optional, default 2.5"]
     pub a2: f64,
     #[builder(default = 0.0)]
+    #[serde_inline_default(0.0)]
     #[doc = r"optional, default 0.0"]
     pub a3: f64,
     #[builder(default = 6.25)]
+    #[serde_inline_default(6.25)]
     #[doc = r"optional, default 6.25"]
     pub a4: f64,
     #[builder(default = 14.0)]
+    #[serde_inline_default(14.0)]
     #[doc = r"optional, default 14.0"]
     pub alp: f64,
 }

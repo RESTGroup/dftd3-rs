@@ -13,6 +13,9 @@ license.workspace = true
 [dependencies]
 derive_builder = { version = "0.20" }
 libloading = { version = "0.8", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde-inline-default = "1.0"
+toml = "0.8"
 
 [dev-dependencies]
 rstest = { version = "0.25" }
@@ -55,4 +58,8 @@ doc-scrape-examples = true
 
 [[example]]
 name = "test_interface"
+doc-scrape-examples = true
+
+[[example]]
+name = "test_parameters"
 doc-scrape-examples = true

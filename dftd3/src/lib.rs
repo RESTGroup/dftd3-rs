@@ -33,6 +33,7 @@ pub mod ffi_dynamic;
 pub use ffi_dynamic as ffi;
 
 pub mod interface;
+pub mod parameters;
 
 #[cfg(feature = "gcp")]
 pub mod interface_gcp;

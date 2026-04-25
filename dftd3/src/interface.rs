@@ -2,7 +2,6 @@
 
 use crate::ffi;
 use derive_builder::{Builder, UninitializedFieldError};
-use duplicate::duplicate_item;
 use std::ffi::{c_char, c_int, CStr};
 use std::ptr::{null, null_mut};
 use std::result::Result;
@@ -956,84 +955,48 @@ impl DFTD3ParamAPI for DFTD3CSODampingParam {
     }
 }
 
-#[cfg(feature = "api-v0_4")]
-#[duplicate_item(
-     DampingParam                        load_damping_f                ;
-    [DFTD3RationalDampingParam        ] [load_rational_damping_f      ];
-    [DFTD3ZeroDampingParam            ] [load_zero_damping_f          ];
-    [DFTD3ModifiedRationalDampingParam] [load_mrational_damping_f     ];
-    [DFTD3ModifiedZeroDampingParam    ] [load_mzero_damping_f         ];
-)]
-impl DFTD3LoadParamAPI for DampingParam {
-    fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error> {
-        DFTD3Param::load_damping_f(method, atm)
-    }
-}
-#[cfg(feature = "api-v0_5")]
-#[duplicate_item(
-     DampingParam                        load_damping_f                ;
-    [DFTD3OptimizedPowerDampingParam  ] [load_optimizedpower_damping_f];
-)]
-impl DFTD3LoadParamAPI for DampingParam {
-    fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error> {
-        DFTD3Param::load_damping_f(method, atm)
-    }
-}
-#[cfg(feature = "api-v0_4")]
-#[duplicate_item(
-    DampingParamBuilder;
-    [DFTD3RationalDampingParamBuilder];
-    [DFTD3ZeroDampingParamBuilder];
-    [DFTD3ModifiedRationalDampingParamBuilder];
-    [DFTD3ModifiedZeroDampingParamBuilder];
-)]
-impl DampingParamBuilder {
-    pub fn init(self) -> DFTD3Param {
-        self.init_f().unwrap()
-    }
+/* #region Macro-based implementations */
 
-    pub fn init_f(self) -> Result<DFTD3Param, DFTD3Error> {
-        self.build()?.new_param_f()
-    }
+macro_rules! impl_load_param_api {
+    ($feature:literal: $type:ty => $method:ident) => {
+        #[cfg(feature = $feature)]
+        impl DFTD3LoadParamAPI for $type {
+            fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error> {
+                DFTD3Param::$method(method, atm)
+            }
+        }
+    };
 }
-#[cfg(feature = "api-v0_5")]
-#[duplicate_item(
-    DampingParamBuilder;
-    [DFTD3OptimizedPowerDampingParamBuilder];
-)]
-impl DampingParamBuilder {
-    pub fn init(self) -> DFTD3Param {
-        self.init_f().unwrap()
-    }
 
-    pub fn init_f(self) -> Result<DFTD3Param, DFTD3Error> {
-        self.build()?.new_param_f()
-    }
+macro_rules! impl_damping_param_builder {
+    ($feature:literal: $type:ty) => {
+        #[cfg(feature = $feature)]
+        impl $type {
+            pub fn init(self) -> DFTD3Param {
+                self.init_f().unwrap()
+            }
+            pub fn init_f(self) -> Result<DFTD3Param, DFTD3Error> {
+                self.build()?.new_param_f()
+            }
+        }
+    };
 }
-#[cfg(feature = "api-v1_3")]
-#[duplicate_item(
-     DampingParam                        load_damping_f                ;
-    [DFTD3CSODampingParam             ] [load_cso_damping_f           ];
-)]
-impl DFTD3LoadParamAPI for DampingParam {
-    fn load_param_f(method: &str, atm: bool) -> Result<DFTD3Param, DFTD3Error> {
-        DFTD3Param::load_damping_f(method, atm)
-    }
-}
-#[cfg(feature = "api-v1_3")]
-#[duplicate_item(
-    DampingParamBuilder;
-    [DFTD3CSODampingParamBuilder];
-)]
-impl DampingParamBuilder {
-    pub fn init(self) -> DFTD3Param {
-        self.init_f().unwrap()
-    }
 
-    pub fn init_f(self) -> Result<DFTD3Param, DFTD3Error> {
-        self.build()?.new_param_f()
-    }
-}
+impl_load_param_api!("api-v0_4": DFTD3RationalDampingParam => load_rational_damping_f);
+impl_load_param_api!("api-v0_4": DFTD3ZeroDampingParam => load_zero_damping_f);
+impl_load_param_api!("api-v0_4": DFTD3ModifiedRationalDampingParam => load_mrational_damping_f);
+impl_load_param_api!("api-v0_4": DFTD3ModifiedZeroDampingParam => load_mzero_damping_f);
+impl_load_param_api!("api-v0_5": DFTD3OptimizedPowerDampingParam => load_optimizedpower_damping_f);
+impl_load_param_api!("api-v1_3": DFTD3CSODampingParam => load_cso_damping_f);
+
+impl_damping_param_builder!("api-v0_4": DFTD3RationalDampingParamBuilder);
+impl_damping_param_builder!("api-v0_4": DFTD3ZeroDampingParamBuilder);
+impl_damping_param_builder!("api-v0_4": DFTD3ModifiedRationalDampingParamBuilder);
+impl_damping_param_builder!("api-v0_4": DFTD3ModifiedZeroDampingParamBuilder);
+impl_damping_param_builder!("api-v0_5": DFTD3OptimizedPowerDampingParamBuilder);
+impl_damping_param_builder!("api-v1_3": DFTD3CSODampingParamBuilder);
+
+/* #endregion */
 
 /* #endregion */
 

@@ -19,6 +19,9 @@ rstest = { version = "0.25" }
 approx = { version = "0.5" }
 
 [features]
+# Default feature set
+default = ["api-v0_5", "dynamic_loading"]
+
 # geometric counter-poise
 gcp = []
 
@@ -33,9 +36,6 @@ api-v0_3 = ["api-v0_2"]
 api-v0_4 = ["api-v0_3"]
 api-v0_5 = ["api-v0_4"]
 api-v1_3 = ["api-v0_5", "gcp"]
-
-# Default feature set
-default = ["api-v0_5"]
 
 [package.metadata.docs.rs]
 cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]

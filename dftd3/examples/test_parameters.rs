@@ -1,78 +1,155 @@
 //! Test the parameters module functionality.
 //!
-//! This example demonstrates the usage of the parameters module
-//! and verifies that the Rust implementation produces correct results.
+//! Translated from s-dftd3's python/dftd3/test_parameters.py.
 
-use dftd3::parameters::{
-    get_all_damping_params, get_damping_param, list_methods, DFTD3DampingParamEnum,
-};
+#![allow(clippy::excessive_precision)]
 
-fn main() {
-    println!("=== Testing parameters module ===\n");
+use approx::assert_abs_diff_eq;
+use dftd3::parameters::{get_all_damping_params, get_damping_param, list_methods, DFTD3DampingParamEnum};
+use dftd3::prelude::DFTD3Error;
 
-    // Test list_methods
-    println!("Testing list_methods...");
+#[test]
+fn test_list_methods() {
     let methods = list_methods();
-    println!("Found {} methods", methods.len());
     assert!(methods.contains(&"b3lyp".to_string()));
     assert!(methods.contains(&"pbe0".to_string()));
-    println!("✓ list_methods works correctly\n");
+    assert!(methods.len() > 100);
+}
 
-    // Test B3LYP-D3(BJ)
-    println!("Testing get_damping_param for B3LYP-D3(BJ)...");
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_get_b3lyp() {
     let param = get_damping_param("b3lyp", "bj").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
-            println!("  s6: {}, s8: {}, a1: {}, a2: {}", data.s6, data.s8, data.a1, data.a2);
-            assert_eq!(data.s6, 1.0);
-            assert!((data.s8 - 1.9889).abs() < 1e-6);
-            assert!((data.a1 - 0.3981).abs() < 1e-6);
-            assert!((data.a2 - 4.4211).abs() < 1e-6);
+            assert_abs_diff_eq!(data.s6, 1.0);
+            assert_abs_diff_eq!(data.s9, 1.0);
+            assert_abs_diff_eq!(data.alp, 14.0);
+            assert_abs_diff_eq!(data.a1, 0.3981);
+            assert_abs_diff_eq!(data.s8, 1.9889);
+            assert_abs_diff_eq!(data.a2, 4.4211);
         },
-        _ => panic!("Expected Rational variant"),
+        _ => panic!("Expected Rational variant for b3lyp/bj"),
     }
-    println!("  DOI: {}", param.doi.clone().unwrap_or_else(|| "N/A".to_string()));
-    println!("✓ B3LYP-D3(BJ) parameters verified\n");
+    assert_eq!(param.doi.as_deref(), Some("10.1002/jcc.21759"));
+}
 
-    // Test r2scan
-    println!("Testing get_damping_param for r2scan-D3(BJ)...");
-    let param = get_damping_param("r2scan", "bj").unwrap();
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_get_m11l() {
+    let param = get_damping_param("m11l", "zero").unwrap();
     match &param.param {
-        DFTD3DampingParamEnum::Rational(data) => {
-            println!("  s6: {}, s8: {}, a1: {}, a2: {}", data.s6, data.s8, data.a1, data.a2);
-            assert!((data.s8 - 0.78981345).abs() < 1e-6);
+        DFTD3DampingParamEnum::Zero(data) => {
+            assert_abs_diff_eq!(data.s6, 1.0);
+            assert_abs_diff_eq!(data.s9, 1.0);
+            assert_abs_diff_eq!(data.alp, 14.0);
+            assert_abs_diff_eq!(data.rs8, 1.0);
+            assert_abs_diff_eq!(data.s8, 1.1129);
+            assert_abs_diff_eq!(data.rs6, 2.3933);
         },
-        _ => panic!("Expected Rational variant"),
+        _ => panic!("Expected Zero variant for m11l/zero"),
     }
-    println!("  DOI: {}", param.doi.clone().unwrap_or_else(|| "N/A".to_string()));
-    println!("✓ r2scan-D3(BJ) parameters verified\n");
+}
 
-    // Test PBE0-D3(zero)
-    println!("Testing get_damping_param for PBE0-D3(zero)...");
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_get_pbe0_zero() {
     let param = get_damping_param("pbe0", "zero").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Zero(data) => {
-            println!("  s6: {}, s8: {}, rs6: {}", data.s6, data.s8, data.rs6);
-            assert!((data.rs6 - 1.287).abs() < 1e-6);
+            assert_abs_diff_eq!(data.s6, 1.0);
+            assert_abs_diff_eq!(data.s8, 0.928);
+            assert_abs_diff_eq!(data.rs6, 1.287);
         },
-        _ => panic!("Expected Zero variant"),
+        _ => panic!("Expected Zero variant for pbe0/zero"),
     }
-    println!("✓ PBE0-D3(zero) parameters verified\n");
+}
 
-    // Test case-insensitive
-    println!("Testing case-insensitive lookup...");
-    let param_lower = get_damping_param("b3lyp", "bj").unwrap();
-    let param_upper = get_damping_param("B3LYP", "BJ").unwrap();
-    assert_eq!(param_lower.param.s6(), param_upper.param.s6());
-    println!("✓ Case-insensitive lookup works\n");
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_get_pw6b95() {
+    let param = get_damping_param("pw6b95", "bj").unwrap();
+    match &param.param {
+        DFTD3DampingParamEnum::Rational(data) => {
+            assert_abs_diff_eq!(data.s6, 1.0);
+            assert_abs_diff_eq!(data.s9, 1.0);
+            assert_abs_diff_eq!(data.alp, 14.0);
+            assert_abs_diff_eq!(data.a1, 0.2076);
+            assert_abs_diff_eq!(data.s8, 0.7257);
+            assert_abs_diff_eq!(data.a2, 6.3750);
+        },
+        _ => panic!("Expected Rational variant for pw6b95/bj"),
+    }
+}
 
-    // Test all_parameters
-    println!("Testing get_all_damping_params...");
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_get_r2scan_bj() {
+    let param = get_damping_param("r2scan", "bj").unwrap();
+    match &param.param {
+        DFTD3DampingParamEnum::Rational(data) => {
+            assert_abs_diff_eq!(data.s8, 0.78981345);
+            assert_abs_diff_eq!(data.a1, 0.49484001);
+        },
+        _ => panic!("Expected Rational variant for r2scan/bj"),
+    }
+    assert_eq!(param.doi.as_deref(), Some("10.1063/5.0041008"));
+}
+
+#[cfg(feature = "api-v0_5")]
+#[test]
+fn test_get_b97d_op() {
+    let param = get_damping_param("b97d", "op").unwrap();
+    match &param.param {
+        DFTD3DampingParamEnum::OptimizedPower(data) => {
+            assert_abs_diff_eq!(data.s6, 1.0);
+            assert_abs_diff_eq!(data.s8, 1.46861);
+            assert_abs_diff_eq!(data.bet, 0.0);
+        },
+        _ => panic!("Expected OptimizedPower variant for b97d/op"),
+    }
+}
+
+#[cfg(feature = "api-v1_3")]
+#[test]
+fn test_get_b3lyp_cso() {
+    let param = get_damping_param("b3lyp", "cso").unwrap();
+    match &param.param {
+        DFTD3DampingParamEnum::CSO(data) => {
+            assert_abs_diff_eq!(data.a1, 0.86);
+        },
+        _ => panic!("Expected CSO variant for b3lyp/cso"),
+    }
+}
+
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_method_not_found() {
+    let result = get_damping_param("nonexistent", "bj");
+    assert!(result.is_err());
+    match &result.unwrap_err() {
+        DFTD3Error::ParametersError(msg) => assert!(msg.contains("nonexistent")),
+        _ => panic!("Expected ParametersError"),
+    }
+}
+
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_variant_not_found() {
+    let result = get_damping_param("m05", "bj");
+    assert!(result.is_err());
+}
+
+#[cfg(feature = "api-v0_4")]
+#[test]
+fn test_all_parameters() {
     let params = get_all_damping_params("bj").unwrap();
-    println!("Found {} methods with BJ parameters", params.len());
     assert!(params.contains_key("b3lyp"));
-    assert!(params.contains_key("pbe"));
-    println!("✓ get_all_damping_params works\n");
+    assert!(params.contains_key("b2plyp"));
+    assert!(params.contains_key("pw6b95"));
+    assert!(params.len() > 50);
+}
 
-    println!("=== All tests passed ===");
+fn main() {
+    println!("Run with: cargo test --example test_parameters");
 }

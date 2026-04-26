@@ -70,8 +70,8 @@ fn main() {
     println!("Testing get_all_damping_params...");
     let params = get_all_damping_params("bj").unwrap();
     println!("Found {} methods with BJ parameters", params.len());
-    assert!(params.contains_key(&"b3lyp".to_string()));
-    assert!(params.contains_key(&"pbe".to_string()));
+    assert!(params.contains_key("b3lyp"));
+    assert!(params.contains_key("pbe"));
     println!("✓ get_all_damping_params works\n");
 
     println!("=== All tests passed ===");

@@ -239,7 +239,7 @@ pub fn get_damping_param(method: &str, version: &str) -> Result<DFTD3DampingPara
     })?;
 
     // Get variant entry
-    let (entry_raw, default_entry) = get_variant_entry(&method_entry, &version_normalized, &db)?;
+    let (entry_raw, default_entry) = get_variant_entry(method_entry, &version_normalized, &db)?;
 
     // Merge with defaults
     let merged = merge_tables(&entry_raw, &default_entry);
@@ -388,15 +388,15 @@ fn merge_tables(entry: &Table, defaults: &Table) -> Table {
 
 /// Extract DOI from merged table (DOI is method-specific, not from defaults).
 fn extract_doi(table: &Table) -> Option<String> {
-    table
-        .get("doi")
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string())
+    table.get("doi").and_then(|v| v.as_str()).map(|s| s.to_string())
 }
 
 /// Convert merged TOML table directly to DFTD3DampingParam via serde.
 #[cfg(feature = "api-v0_4")]
-fn convert_to_damping_param(merged: &Table, version: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+fn convert_to_damping_param(
+    merged: &Table,
+    version: &str,
+) -> Result<DFTD3DampingParam, DFTD3Error> {
     let doi = extract_doi(merged);
 
     let param = match version {
@@ -450,13 +450,17 @@ fn convert_to_damping_param(merged: &Table, version: &str) -> Result<DFTD3Dampin
 fn deserialize_table<T: for<'de> Deserialize<'de>>(table: &Table) -> Result<T, DFTD3Error> {
     // Use toml::Value::Table as deserializer via IntoDeserializer
     let value = toml::Value::Table(table.clone());
-    T::deserialize(value.into_deserializer())
-        .map_err(|e: toml::de::Error| DFTD3Error::ParametersError(format!("Deserialization error: {}", e)))
+    T::deserialize(value.into_deserializer()).map_err(|e: toml::de::Error| {
+        DFTD3Error::ParametersError(format!("Deserialization error: {}", e))
+    })
 }
 
 // Non-feature-gated version that returns an error for unsupported variants
 #[cfg(not(feature = "api-v0_4"))]
-fn convert_to_damping_param(_merged: &Table, version: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+fn convert_to_damping_param(
+    _merged: &Table,
+    version: &str,
+) -> Result<DFTD3DampingParam, DFTD3Error> {
     Err(DFTD3Error::ParametersError(format!(
         "Variant '{}' requires api-v0_4 feature or higher",
         version
@@ -587,8 +591,8 @@ mod tests {
     #[test]
     fn test_get_all_damping_params() {
         let params = get_all_damping_params("bj").unwrap();
-        assert!(params.contains_key(&"b3lyp".to_string()));
-        assert!(params.contains_key(&"pbe".to_string()));
+        assert!(params.contains_key("b3lyp"));
+        assert!(params.contains_key("pbe"));
         assert!(params.len() > 50);
     }
 

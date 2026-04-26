@@ -6,7 +6,6 @@
 //! inspection of damping parameters for various XC functionals.
 
 use crate::interface::*;
-use serde::de::IntoDeserializer;
 use serde::Deserialize;
 use std::collections::HashMap;
 use toml::Table;
@@ -368,8 +367,7 @@ fn get_variant_entry_for_defaults(
         "cso" => db.default.parameter.d3.cso.clone().unwrap_or_default(),
         _ => {
             return Err(DFTD3Error::ParametersError(format!(
-                "Variant '{}' not found in defaults",
-                version
+                "Variant '{version}' not found in defaults",
             )))
         },
     };
@@ -400,47 +398,27 @@ fn convert_to_damping_param(
     let doi = extract_doi(merged);
 
     let param = match version {
-        "bj" => {
-            let param: DFTD3RationalDampingParam = deserialize_table(merged)?;
-            DFTD3DampingParamEnum::Rational(param)
-        },
-        "zero" => {
-            let param: DFTD3ZeroDampingParam = deserialize_table(merged)?;
-            DFTD3DampingParamEnum::Zero(param)
-        },
-        "bjm" => {
-            let param: DFTD3ModifiedRationalDampingParam = deserialize_table(merged)?;
-            DFTD3DampingParamEnum::ModifiedRational(param)
-        },
-        "zerom" => {
-            let param: DFTD3ModifiedZeroDampingParam = deserialize_table(merged)?;
-            DFTD3DampingParamEnum::ModifiedZero(param)
-        },
+        "bj" => DFTD3DampingParamEnum::Rational(deserialize_table(merged)?),
+        "zero" => DFTD3DampingParamEnum::Zero(deserialize_table(merged)?),
+        "bjm" => DFTD3DampingParamEnum::ModifiedRational(deserialize_table(merged)?),
+        "zerom" => DFTD3DampingParamEnum::ModifiedZero(deserialize_table(merged)?),
         #[cfg(feature = "api-v0_5")]
-        "op" => {
-            let param: DFTD3OptimizedPowerDampingParam = deserialize_table(merged)?;
-            DFTD3DampingParamEnum::OptimizedPower(param)
-        },
+        "op" => DFTD3DampingParamEnum::OptimizedPower(deserialize_table(merged)?),
         #[cfg(feature = "api-v1_3")]
-        "cso" => {
-            let param: DFTD3CSODampingParam = deserialize_table(merged)?;
-            DFTD3DampingParamEnum::CSO(param)
-        },
+        "cso" => DFTD3DampingParamEnum::CSO(deserialize_table(merged)?),
         #[cfg(not(feature = "api-v0_5"))]
         "op" => {
             return Err(DFTD3Error::ParametersError(format!(
-                "Variant '{}' requires api-v0_5 feature",
-                version
+                "Variant '{version}' requires api-v0_5 feature",
             )))
         },
         #[cfg(not(feature = "api-v1_3"))]
         "cso" => {
             return Err(DFTD3Error::ParametersError(format!(
-                "Variant '{}' requires api-v1_3 feature",
-                version
+                "Variant '{version}' requires api-v1_3 feature",
             )))
         },
-        _ => return Err(DFTD3Error::ParametersError(format!("Unknown variant: {}", version))),
+        _ => return Err(DFTD3Error::ParametersError(format!("Unknown variant: {version}"))),
     };
 
     Ok(DFTD3DampingParam { param, doi })
@@ -448,11 +426,13 @@ fn convert_to_damping_param(
 
 /// Deserialize a TOML table directly into a serde-deserializable type.
 fn deserialize_table<T: for<'de> Deserialize<'de>>(table: &Table) -> Result<T, DFTD3Error> {
-    // Use toml::Value::Table as deserializer via IntoDeserializer
-    let value = toml::Value::Table(table.clone());
-    T::deserialize(value.into_deserializer()).map_err(|e: toml::de::Error| {
-        DFTD3Error::ParametersError(format!("Deserialization error: {}", e))
-    })
+    T::deserialize(table.clone()).map_err(|e| e.into())
+}
+
+impl From<toml::de::Error> for DFTD3Error {
+    fn from(e: toml::de::Error) -> Self {
+        DFTD3Error::ParametersError(format!("Deserialization error: {e}"))
+    }
 }
 
 // Non-feature-gated version that returns an error for unsupported variants

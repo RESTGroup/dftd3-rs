@@ -4,10 +4,6 @@
 
 #![allow(clippy::excessive_precision)]
 
-use approx::assert_abs_diff_eq;
-use dftd3::parameters::{get_all_damping_params, get_damping_param, list_methods, DFTD3DampingParamEnum};
-use dftd3::prelude::DFTD3Error;
-
 #[test]
 fn test_list_methods() {
     let methods = list_methods();

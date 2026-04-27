@@ -229,7 +229,7 @@ fn load_data_base() -> Result<ParameterDataBase, DFTD3Error> {
 /// A `DFTD3DampingParam` containing the damping parameters and DOI reference.
 pub fn get_damping_param(method: &str, version: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
     let db = load_data_base()?;
-    let method_lower = method.to_lowercase();
+    let method_lower = normalize_method(method);
     let version_normalized = normalize_version(version);
 
     // Get method entry
@@ -245,6 +245,37 @@ pub fn get_damping_param(method: &str, version: &str) -> Result<DFTD3DampingPara
 
     // Convert to public struct
     convert_to_damping_param(&merged, &version_normalized)
+}
+
+/// Get the merged TOML table for a method and variant (method values override
+/// defaults).
+///
+/// This is useful for programmatic parameter overrides before final
+/// deserialization.
+pub fn get_merged_param_table(method: &str, version: &str) -> Result<Table, DFTD3Error> {
+    let db = load_data_base()?;
+    let method_lower = normalize_method(method);
+    let version_normalized = normalize_version(version);
+
+    let method_entry = db.parameter.get(&method_lower).ok_or_else(|| {
+        DFTD3Error::ParametersError(format!("Method '{}' not found in database", method))
+    })?;
+
+    let (entry_raw, default_entry) = get_variant_entry(method_entry, &version_normalized, &db)?;
+    Ok(merge_tables(&entry_raw, &default_entry))
+}
+
+/// Normalize method name: lowercase and remove separators (`-`, `_`, spaces).
+pub(crate) fn normalize_method(method: &str) -> String {
+    method.to_lowercase().replace(['-', '_', ' '], "")
+}
+
+/// Get the default parameter table for a variant.
+pub fn get_default_param_table(version: &str) -> Result<Table, DFTD3Error> {
+    let db = load_data_base()?;
+    let version_normalized = normalize_version(version);
+    let (_, default_entry) = get_variant_entry_for_defaults(&version_normalized, &db)?;
+    Ok(default_entry)
 }
 
 /// Get all damping parameters for all methods for a given variant.
@@ -276,7 +307,7 @@ pub fn get_all_damping_params(
 }
 
 /// List all available methods in the database.
-pub fn list_methods() -> Vec<String> {
+pub fn list_dftd3_methods() -> Vec<String> {
     let db = load_data_base().unwrap_or_else(|_| {
         // Return empty if parsing fails (shouldn't happen with embedded TOML)
         ParameterDataBase {
@@ -304,7 +335,7 @@ pub fn list_methods() -> Vec<String> {
 /* #region Internal helper functions */
 
 /// Normalize version string (handle aliases like "d3bj" -> "bj").
-fn normalize_version(version: &str) -> String {
+pub(crate) fn normalize_version(version: &str) -> String {
     let version_lower = version.to_lowercase().replace(['-', '_', ' '], "");
     // Handle aliases
     match version_lower.as_str() {
@@ -376,7 +407,7 @@ fn get_variant_entry_for_defaults(
 
 /// Merge method-specific entry table with defaults table.
 /// Method values override defaults.
-fn merge_tables(entry: &Table, defaults: &Table) -> Table {
+pub(crate) fn merge_tables(entry: &Table, defaults: &Table) -> Table {
     let mut merged = defaults.clone();
     for (key, value) in entry {
         merged.insert(key.clone(), value.clone());
@@ -391,7 +422,7 @@ fn extract_doi(table: &Table) -> Option<String> {
 
 /// Convert merged TOML table directly to DFTD3DampingParam via serde.
 #[cfg(feature = "api-v0_4")]
-fn convert_to_damping_param(
+pub(crate) fn convert_to_damping_param(
     merged: &Table,
     version: &str,
 ) -> Result<DFTD3DampingParam, DFTD3Error> {
@@ -425,7 +456,9 @@ fn convert_to_damping_param(
 }
 
 /// Deserialize a TOML table directly into a serde-deserializable type.
-fn deserialize_table<T: for<'de> Deserialize<'de>>(table: &Table) -> Result<T, DFTD3Error> {
+pub(crate) fn deserialize_table<T: for<'de> Deserialize<'de>>(
+    table: &Table,
+) -> Result<T, DFTD3Error> {
     T::deserialize(table.clone()).map_err(|e| e.into())
 }
 
@@ -437,7 +470,7 @@ impl From<toml::de::Error> for DFTD3Error {
 
 // Non-feature-gated version that returns an error for unsupported variants
 #[cfg(not(feature = "api-v0_4"))]
-fn convert_to_damping_param(
+pub(crate) fn convert_to_damping_param(
     _merged: &Table,
     version: &str,
 ) -> Result<DFTD3DampingParam, DFTD3Error> {

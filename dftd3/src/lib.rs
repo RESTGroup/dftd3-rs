@@ -34,6 +34,7 @@ pub use ffi_dynamic as ffi;
 
 pub mod interface;
 pub mod parameters;
+pub mod parsing;
 
 #[cfg(feature = "gcp")]
 pub mod interface_gcp;
@@ -42,6 +43,11 @@ pub mod prelude {
     //! Use `dftd3::prelude::*` to import all the commonly used structs and
     //! functions.
     pub use crate::interface::*;
+    pub use crate::parameters::*;
+    pub use crate::parsing::parse_damping_param_from_toml;
+
+    #[cfg(feature = "json")]
+    use crate::parsing::parse_damping_param_from_json;
 
     #[cfg(feature = "gcp")]
     pub use crate::interface_gcp::*;

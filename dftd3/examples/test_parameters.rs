@@ -2,11 +2,17 @@
 //!
 //! Translated from s-dftd3's python/dftd3/test_parameters.py.
 
-#![allow(clippy::excessive_precision)]
+#![allow(clippy::excessive_precision, unused_imports)]
+
+use approx::assert_abs_diff_eq;
+use dftd3::parameters::{
+    get_all_damping_params, get_damping_param, list_dftd3_methods, DFTD3DampingParamEnum,
+};
+use dftd3::prelude::DFTD3Error;
 
 #[test]
 fn test_list_methods() {
-    let methods = list_methods();
+    let methods = list_dftd3_methods();
     assert!(methods.contains(&"b3lyp".to_string()));
     assert!(methods.contains(&"pbe0".to_string()));
     assert!(methods.len() > 100);

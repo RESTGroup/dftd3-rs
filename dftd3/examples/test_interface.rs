@@ -198,6 +198,22 @@ fn test_pbe0_d3_bj(model: DFTD3Model, #[case] atm: bool, #[case] expected: f64) 
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[rstest]
+fn test_anyway(model: DFTD3Model) {
+    // {a1=0.4145, s8=1.2177, a2=4.8593, doi="10.1002/jcc.21759"}
+    let param = DFTD3RationalDampingParam {
+        a1: 0.4145,
+        s8: 1.2177,
+        a2: 4.8593,
+        s6: 1.0,
+        s9: 0.0,
+        alp: 14.0,
+    };
+    let param = param.new_param();
+    let res = model.get_dispersion(&param, false);
+    println!("Energy: {}", res.energy);
+}
+
 #[cfg(feature = "api-v0_4")]
 #[rstest]
 #[case(true, -0.022714272555175656)]

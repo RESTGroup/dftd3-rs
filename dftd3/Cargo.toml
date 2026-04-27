@@ -13,6 +13,10 @@ license.workspace = true
 [dependencies]
 derive_builder = { version = "0.20" }
 libloading = { version = "0.8", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde-inline-default = "1.0"
+serde_json = { version = "1.0", optional = true }
+toml = "0.8"
 
 [dev-dependencies]
 rstest = { version = "0.25" }
@@ -37,6 +41,9 @@ api-v0_4 = ["api-v0_3"]
 api-v0_5 = ["api-v0_4"]
 api-v1_3 = ["api-v0_5", "gcp"]
 
+# JSON input support for parsing module
+json = ["dep:serde_json"]
+
 [package.metadata.docs.rs]
 cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
 all-features = true
@@ -55,4 +62,12 @@ doc-scrape-examples = true
 
 [[example]]
 name = "test_interface"
+doc-scrape-examples = true
+
+[[example]]
+name = "test_parameters"
+doc-scrape-examples = true
+
+[[example]]
+name = "test_parsing"
 doc-scrape-examples = true

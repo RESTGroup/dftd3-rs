@@ -7,6 +7,7 @@ module. The commonly used functions and structs can be
 
 - [`DFTD3Model`](interface::DFTD3Model): serve as main driver struct for DFTD3.
 - [`dftd3_load_param`](interface::dftd3_load_param): load parameters with xc-functional and DFT-D3 version specified.
+- [`dftd3_parse_damping_param_from_toml`](parsing::dftd3_parse_damping_param_from_toml): parse damping parameters from TOML string (supports method lookup and overrides). Similar counterpart of json can also found if crate feature `json` is enabled. Please refer to [parsing] module for more details and examples.
 
 To specify custom DFT-D3 parameters, some structs you may interest.
 
@@ -33,6 +34,8 @@ pub mod ffi_dynamic;
 pub use ffi_dynamic as ffi;
 
 pub mod interface;
+pub mod parameters;
+pub mod parsing;
 
 #[cfg(feature = "gcp")]
 pub mod interface_gcp;
@@ -41,6 +44,8 @@ pub mod prelude {
     //! Use `dftd3::prelude::*` to import all the commonly used structs and
     //! functions.
     pub use crate::interface::*;
+    pub use crate::parameters::*;
+    pub use crate::parsing::*;
 
     #[cfg(feature = "gcp")]
     pub use crate::interface_gcp::*;

@@ -44,10 +44,7 @@ pub mod prelude {
     //! functions.
     pub use crate::interface::*;
     pub use crate::parameters::*;
-    pub use crate::parsing::parse_damping_param_from_toml;
-
-    #[cfg(feature = "json")]
-    use crate::parsing::parse_damping_param_from_json;
+    pub use crate::parsing::*;
 
     #[cfg(feature = "gcp")]
     pub use crate::interface_gcp::*;

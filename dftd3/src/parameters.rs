@@ -227,7 +227,10 @@ fn load_data_base() -> Result<ParameterDataBase, DFTD3Error> {
 /// # Returns
 ///
 /// A `DFTD3DampingParam` containing the damping parameters and DOI reference.
-pub fn get_damping_param(method: &str, version: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+pub fn dftd3_get_damping_param(
+    method: &str,
+    version: &str,
+) -> Result<DFTD3DampingParam, DFTD3Error> {
     let db = load_data_base()?;
     let method_lower = normalize_method(method);
     let version_normalized = normalize_version(version);
@@ -252,7 +255,7 @@ pub fn get_damping_param(method: &str, version: &str) -> Result<DFTD3DampingPara
 ///
 /// This is useful for programmatic parameter overrides before final
 /// deserialization.
-pub fn get_merged_param_table(method: &str, version: &str) -> Result<Table, DFTD3Error> {
+pub(crate) fn get_merged_param_table(method: &str, version: &str) -> Result<Table, DFTD3Error> {
     let db = load_data_base()?;
     let method_lower = normalize_method(method);
     let version_normalized = normalize_version(version);
@@ -271,7 +274,7 @@ pub(crate) fn normalize_method(method: &str) -> String {
 }
 
 /// Get the default parameter table for a variant.
-pub fn get_default_param_table(version: &str) -> Result<Table, DFTD3Error> {
+pub(crate) fn get_default_param_table(version: &str) -> Result<Table, DFTD3Error> {
     let db = load_data_base()?;
     let version_normalized = normalize_version(version);
     let (_, default_entry) = get_variant_entry_for_defaults(&version_normalized, &db)?;
@@ -287,7 +290,7 @@ pub fn get_default_param_table(version: &str) -> Result<Table, DFTD3Error> {
 /// # Returns
 ///
 /// A HashMap mapping method names to their damping parameters.
-pub fn get_all_damping_params(
+pub fn dftd3_get_all_damping_params(
     version: &str,
 ) -> Result<HashMap<String, DFTD3DampingParam>, DFTD3Error> {
     let db = load_data_base()?;
@@ -307,7 +310,7 @@ pub fn get_all_damping_params(
 }
 
 /// List all available methods in the database.
-pub fn list_dftd3_methods() -> Vec<String> {
+pub fn dftd3_list_methods() -> Vec<String> {
     let db = load_data_base().unwrap_or_else(|_| {
         // Return empty if parsing fails (shouldn't happen with embedded TOML)
         ParameterDataBase {

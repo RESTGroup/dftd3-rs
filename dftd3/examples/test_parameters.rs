@@ -5,14 +5,11 @@
 #![allow(clippy::excessive_precision, unused_imports)]
 
 use approx::assert_abs_diff_eq;
-use dftd3::parameters::{
-    get_all_damping_params, get_damping_param, list_dftd3_methods, DFTD3DampingParamEnum,
-};
-use dftd3::prelude::DFTD3Error;
+use dftd3::prelude::*;
 
 #[test]
 fn test_list_methods() {
-    let methods = list_dftd3_methods();
+    let methods = dftd3_list_methods();
     assert!(methods.contains(&"b3lyp".to_string()));
     assert!(methods.contains(&"pbe0".to_string()));
     assert!(methods.len() > 100);
@@ -21,7 +18,7 @@ fn test_list_methods() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_get_b3lyp() {
-    let param = get_damping_param("b3lyp", "bj").unwrap();
+    let param = dftd3_get_damping_param("b3lyp", "bj").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s6, 1.0);
@@ -39,7 +36,7 @@ fn test_get_b3lyp() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_get_m11l() {
-    let param = get_damping_param("m11l", "zero").unwrap();
+    let param = dftd3_get_damping_param("m11l", "zero").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Zero(data) => {
             assert_abs_diff_eq!(data.s6, 1.0);
@@ -56,7 +53,7 @@ fn test_get_m11l() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_get_pbe0_zero() {
-    let param = get_damping_param("pbe0", "zero").unwrap();
+    let param = dftd3_get_damping_param("pbe0", "zero").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Zero(data) => {
             assert_abs_diff_eq!(data.s6, 1.0);
@@ -70,7 +67,7 @@ fn test_get_pbe0_zero() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_get_pw6b95() {
-    let param = get_damping_param("pw6b95", "bj").unwrap();
+    let param = dftd3_get_damping_param("pw6b95", "bj").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s6, 1.0);
@@ -87,7 +84,7 @@ fn test_get_pw6b95() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_get_r2scan_bj() {
-    let param = get_damping_param("r2scan", "bj").unwrap();
+    let param = dftd3_get_damping_param("r2scan", "bj").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s8, 0.78981345);
@@ -101,7 +98,7 @@ fn test_get_r2scan_bj() {
 #[cfg(feature = "api-v0_5")]
 #[test]
 fn test_get_b97d_op() {
-    let param = get_damping_param("b97d", "op").unwrap();
+    let param = dftd3_get_damping_param("b97d", "op").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::OptimizedPower(data) => {
             assert_abs_diff_eq!(data.s6, 1.0);
@@ -115,7 +112,7 @@ fn test_get_b97d_op() {
 #[cfg(feature = "api-v1_3")]
 #[test]
 fn test_get_b3lyp_cso() {
-    let param = get_damping_param("b3lyp", "cso").unwrap();
+    let param = dftd3_get_damping_param("b3lyp", "cso").unwrap();
     match &param.param {
         DFTD3DampingParamEnum::CSO(data) => {
             assert_abs_diff_eq!(data.a1, 0.86);
@@ -127,7 +124,7 @@ fn test_get_b3lyp_cso() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_method_not_found() {
-    let result = get_damping_param("nonexistent", "bj");
+    let result = dftd3_get_damping_param("nonexistent", "bj");
     assert!(result.is_err());
     match &result.unwrap_err() {
         DFTD3Error::ParametersError(msg) => assert!(msg.contains("nonexistent")),
@@ -138,14 +135,14 @@ fn test_method_not_found() {
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_variant_not_found() {
-    let result = get_damping_param("m05", "bj");
+    let result = dftd3_get_damping_param("m05", "bj");
     assert!(result.is_err());
 }
 
 #[cfg(feature = "api-v0_4")]
 #[test]
 fn test_all_parameters() {
-    let params = get_all_damping_params("bj").unwrap();
+    let params = dftd3_get_all_damping_params("bj").unwrap();
     assert!(params.contains_key("b3lyp"));
     assert!(params.contains_key("b2plyp"));
     assert!(params.contains_key("pw6b95"));

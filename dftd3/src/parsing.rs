@@ -61,7 +61,7 @@ fn valid_fields_for_version(version: &str) -> Result<&[&str], DFTD3Error> {
 /// - `method` is specified but not found in the database
 /// - A field not valid for the given variant is present
 /// - Required damping parameters are missing
-pub fn parse_damping_param(input: &Table) -> Result<DFTD3DampingParam, DFTD3Error> {
+pub fn dftd3_parse_damping_param(input: &Table) -> Result<DFTD3DampingParam, DFTD3Error> {
     // 1. Extract version (required)
     let version_raw = input
         .get("version")
@@ -151,7 +151,8 @@ fn parse_toml_table(input: &str) -> Result<Table, DFTD3Error> {
             Err(DFTD3Error::ParametersError("Invalid TOML format".into()))
         }
     } else {
-        toml::from_str(trimmed).map_err(|e| DFTD3Error::ParametersError(format!("TOML parsing error: {e}")))
+        toml::from_str(trimmed)
+            .map_err(|e| DFTD3Error::ParametersError(format!("TOML parsing error: {e}")))
     }
 }
 
@@ -165,11 +166,11 @@ fn parse_toml_table(input: &str) -> Result<Table, DFTD3Error> {
 ///
 /// ```ignore
 /// let input = r#"{version = "bj", method = "b3lyp"}"#;
-/// let param = parse_damping_param_from_toml(input)?;
+/// let param = dftd3_parse_damping_param_from_toml(input)?;
 /// ```
-pub fn parse_damping_param_from_toml(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+pub fn dftd3_parse_damping_param_from_toml(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
     let table = parse_toml_table(input)?;
-    parse_damping_param(&table)
+    dftd3_parse_damping_param(&table)
 }
 
 /// Parse damping parameters from a JSON string.
@@ -180,14 +181,14 @@ pub fn parse_damping_param_from_toml(input: &str) -> Result<DFTD3DampingParam, D
 ///
 /// ```ignore
 /// let input = r#"{"version": "bj", "method": "b3lyp"}"#;
-/// let param = parse_damping_param_from_json(input)?;
+/// let param = dftd3_parse_damping_param_from_json(input)?;
 /// ```
 #[cfg(feature = "json")]
-pub fn parse_damping_param_from_json(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+pub fn dftd3_parse_damping_param_from_json(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
     let value: serde_json::Value = serde_json::from_str(input)
         .map_err(|e| DFTD3Error::ParametersError(format!("JSON parsing error: {e}")))?;
     let table = json_value_to_toml_table(&value)?;
-    parse_damping_param(&table)
+    dftd3_parse_damping_param(&table)
 }
 
 /// Convert a JSON object to a TOML table.

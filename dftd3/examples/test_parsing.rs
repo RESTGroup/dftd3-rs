@@ -5,16 +5,13 @@
 #![allow(clippy::excessive_precision, unused_imports)]
 
 use approx::assert_abs_diff_eq;
-use dftd3::parameters::DFTD3DampingParamEnum;
-#[cfg(feature = "json")]
-use dftd3::parsing::parse_damping_param_from_json;
-use dftd3::parsing::parse_damping_param_from_toml;
-use dftd3::prelude::DFTD3Error;
+use dftd3::prelude::*;
 
 // --- Use case 1: Method lookup ---
 #[test]
 fn test_method_lookup() {
-    let param = parse_damping_param_from_toml(r#"{version = "d3bj", method = "b3lyp"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "d3bj", method = "b3lyp"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.a1, 0.3981);
@@ -29,7 +26,8 @@ fn test_method_lookup() {
 // --- Use case 2: Version without d3 prefix ---
 #[test]
 fn test_version_without_prefix() {
-    let param = parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.a1, 0.3981);
@@ -41,7 +39,8 @@ fn test_version_without_prefix() {
 // --- Version is case-insensitive ---
 #[test]
 fn test_version_case_insensitive() {
-    let param = parse_damping_param_from_toml(r#"{version = "BJ", method = "b3lyp"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "BJ", method = "b3lyp"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.a1, 0.3981);
@@ -53,7 +52,10 @@ fn test_version_case_insensitive() {
 // --- Use case 3: Direct parameters ---
 #[test]
 fn test_direct_params() {
-    let param = parse_damping_param_from_toml(r#"{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211}"#).unwrap();
+    let param = dftd3_parse_damping_param_from_toml(
+        r#"{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211}"#,
+    )
+    .unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s6, 1.0);
@@ -71,7 +73,9 @@ fn test_direct_params() {
 // --- Use case 4: atm = false sets s9 = 0.0 ---
 #[test]
 fn test_atm_false() {
-    let param = parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp", atm = false}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp", atm = false}"#)
+            .unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.a1, 0.3981);
@@ -84,7 +88,8 @@ fn test_atm_false() {
 // --- atm = true is default (s9 = 1.0) ---
 #[test]
 fn test_atm_true_default() {
-    let param = parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s9, 1.0);
@@ -96,7 +101,9 @@ fn test_atm_true_default() {
 // --- Use case 5: Method lookup with parameter override ---
 #[test]
 fn test_method_override() {
-    let param = parse_damping_param_from_toml(r#"{version = "d3bj", method = "b3lyp", a1 = 0.5}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "d3bj", method = "b3lyp", a1 = 0.5}"#)
+            .unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.a1, 0.5);
@@ -109,7 +116,10 @@ fn test_method_override() {
 // --- Use case 6: Direct parameters with atm = false ---
 #[test]
 fn test_direct_params_atm_false() {
-    let param = parse_damping_param_from_toml(r#"{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211, atm = false}"#).unwrap();
+    let param = dftd3_parse_damping_param_from_toml(
+        r#"{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211, atm = false}"#,
+    )
+    .unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s9, 0.0);
@@ -122,7 +132,10 @@ fn test_direct_params_atm_false() {
 // --- s9 takes precedence over atm when both specified ---
 #[test]
 fn test_s9_precedence_over_atm() {
-    let param = parse_damping_param_from_toml(r#"{version = "bj", method = "b3lyp", atm = false, s9 = 1.0}"#).unwrap();
+    let param = dftd3_parse_damping_param_from_toml(
+        r#"{version = "bj", method = "b3lyp", atm = false, s9 = 1.0}"#,
+    )
+    .unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s9, 1.0); // s9 takes precedence
@@ -134,10 +147,13 @@ fn test_s9_precedence_over_atm() {
 // --- Use case 7: Unknown field should raise error ---
 #[test]
 fn test_unknown_field_error() {
-    let result = parse_damping_param_from_toml(r#"{version = "d3bj", method = "b3lyp", rs6 = 0.5}"#);
+    let result =
+        dftd3_parse_damping_param_from_toml(r#"{version = "d3bj", method = "b3lyp", rs6 = 0.5}"#);
     assert!(result.is_err());
     match result.unwrap_err() {
-        DFTD3Error::ParametersError(ref msg) => assert!(msg.contains("rs6"), "Error should mention 'rs6': {msg}"),
+        DFTD3Error::ParametersError(ref msg) => {
+            assert!(msg.contains("rs6"), "Error should mention 'rs6': {msg}")
+        },
         e => panic!("Expected ParametersError, got: {e:?}"),
     }
 }
@@ -145,7 +161,8 @@ fn test_unknown_field_error() {
 // --- Use case 8: Method name normalization (remove separators) ---
 #[test]
 fn test_method_name_normalization() {
-    let param = parse_damping_param_from_toml(r#"{version = "zero", method = "m06-2x"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "zero", method = "m06-2x"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Zero(data) => {
             assert_abs_diff_eq!(data.rs6, 1.619);
@@ -157,7 +174,8 @@ fn test_method_name_normalization() {
 
 #[test]
 fn test_method_name_with_underscores() {
-    let param = parse_damping_param_from_toml(r#"{version = "bj", method = "r2_scan"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "bj", method = "r2_scan"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => {
             assert_abs_diff_eq!(data.s8, 0.78981345);
@@ -168,16 +186,16 @@ fn test_method_name_with_underscores() {
 
 #[test]
 fn test_missing_version_error() {
-    let result = parse_damping_param_from_toml(r#"{method = "b3lyp"}"#);
+    let result = dftd3_parse_damping_param_from_toml(r#"{method = "b3lyp"}"#);
     assert!(result.is_err());
 }
 
-// --- parse_damping_param_from_toml with standard TOML ---
+// --- dftd3_parse_damping_param_from_toml with standard TOML ---
 #[test]
 fn test_parse_from_toml_standard() {
     let input = r#"version = "bj"
 method = "b3lyp""#;
-    let param = parse_damping_param_from_toml(input).unwrap();
+    let param = dftd3_parse_damping_param_from_toml(input).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => assert_abs_diff_eq!(data.a1, 0.3981),
         _ => panic!("Expected Rational variant"),
@@ -189,7 +207,7 @@ method = "b3lyp""#;
 #[test]
 fn test_parse_from_json() {
     let input = r#"{"version": "bj", "method": "b3lyp"}"#;
-    let param = parse_damping_param_from_json(input).unwrap();
+    let param = dftd3_parse_damping_param_from_json(input).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => assert_abs_diff_eq!(data.a1, 0.3981),
         _ => panic!("Expected Rational variant"),
@@ -200,7 +218,7 @@ fn test_parse_from_json() {
 #[test]
 fn test_parse_from_json_atm() {
     let input = r#"{"version": "bj", "method": "b3lyp", "atm": false}"#;
-    let param = parse_damping_param_from_json(input).unwrap();
+    let param = dftd3_parse_damping_param_from_json(input).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::Rational(data) => assert_abs_diff_eq!(data.s9, 0.0),
         _ => panic!("Expected Rational variant"),
@@ -211,7 +229,8 @@ fn test_parse_from_json_atm() {
 #[cfg(feature = "api-v0_5")]
 #[test]
 fn test_op_variant() {
-    let param = parse_damping_param_from_toml(r#"{version = "op", method = "b97d"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "op", method = "b97d"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::OptimizedPower(data) => {
             assert_abs_diff_eq!(data.s8, 1.46861);
@@ -224,7 +243,9 @@ fn test_op_variant() {
 #[cfg(feature = "api-v0_5")]
 #[test]
 fn test_op_atm_false() {
-    let param = parse_damping_param_from_toml(r#"{version = "op", method = "b97d", atm = false}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "op", method = "b97d", atm = false}"#)
+            .unwrap();
     match &param.param {
         DFTD3DampingParamEnum::OptimizedPower(data) => {
             assert_abs_diff_eq!(data.s9, 0.0);
@@ -238,7 +259,8 @@ fn test_op_atm_false() {
 #[cfg(feature = "api-v1_3")]
 #[test]
 fn test_cso_variant() {
-    let param = parse_damping_param_from_toml(r#"{version = "cso", method = "b3lyp"}"#).unwrap();
+    let param =
+        dftd3_parse_damping_param_from_toml(r#"{version = "cso", method = "b3lyp"}"#).unwrap();
     match &param.param {
         DFTD3DampingParamEnum::CSO(data) => assert_abs_diff_eq!(data.a1, 0.86),
         _ => panic!("Expected CSO variant"),

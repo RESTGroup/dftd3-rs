@@ -227,7 +227,11 @@ fn load_data_base() -> Result<ParameterDataBase, DFTD3Error> {
 /// # Returns
 ///
 /// A `DFTD3DampingParam` containing the damping parameters and DOI reference.
-pub fn dftd3_get_damping_param(
+pub fn dftd3_get_damping_param(method: &str, version: &str) -> DFTD3DampingParam {
+    dftd3_get_damping_param_f(method, version).unwrap()
+}
+
+pub fn dftd3_get_damping_param_f(
     method: &str,
     version: &str,
 ) -> Result<DFTD3DampingParam, DFTD3Error> {
@@ -290,7 +294,11 @@ pub(crate) fn get_default_param_table(version: &str) -> Result<Table, DFTD3Error
 /// # Returns
 ///
 /// A HashMap mapping method names to their damping parameters.
-pub fn dftd3_get_all_damping_params(
+pub fn dftd3_get_all_damping_params(version: &str) -> HashMap<String, DFTD3DampingParam> {
+    dftd3_get_all_damping_params_f(version).unwrap()
+}
+
+pub fn dftd3_get_all_damping_params_f(
     version: &str,
 ) -> Result<HashMap<String, DFTD3DampingParam>, DFTD3Error> {
     let db = load_data_base()?;

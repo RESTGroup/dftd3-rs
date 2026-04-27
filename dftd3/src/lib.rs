@@ -7,8 +7,7 @@ module. The commonly used functions and structs can be
 
 - [`DFTD3Model`](interface::DFTD3Model): serve as main driver struct for DFTD3.
 - [`dftd3_load_param`](interface::dftd3_load_param): load parameters with xc-functional and DFT-D3 version specified.
-- [`dftd3_parse_damping_param_from_toml`](parsing::dftd3_parse_damping_param_from_toml): parse damping parameters from TOML string (supports method lookup and overrides).
-- [`dftd3_parse_damping_param_from_json`](parsing::dftd3_parse_damping_param_from_json): parse damping parameters from JSON string (requires `json` feature).
+- [`dftd3_parse_damping_param_from_toml`](parsing::dftd3_parse_damping_param_from_toml): parse damping parameters from TOML string (supports method lookup and overrides). Similar counterpart of json can also found if crate feature `json` is enabled. Please refer to [parsing] module for more details and examples.
 
 To specify custom DFT-D3 parameters, some structs you may interest.
 

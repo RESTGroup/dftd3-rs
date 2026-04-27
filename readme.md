@@ -70,6 +70,33 @@ println!("Dispersion gradient:");
 gradient.chunks(3).for_each(|chunk| println!("{:16.9?}", chunk));
 ```
 
+### Example: Custom parameters by toml
+
+```rust
+use dftd3::prelude::*;
+// Use custom parameters by toml string
+let input = r#"{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211, atm = false}"#;
+// You can also use the following input to specify B3LYP-D3(BJ) parameters
+// let input = r#"{version = "d3bj", method = "b3lyp"}"#;
+// toml parameter type
+let damping_param = dftd3_parse_damping_param_from_toml(input);
+// FFI parameter type
+let dftd3_param = damping_param.new_param();
+
+let atom_charges = vec![8, 1, 1];
+// coordinates in bohr
+#[rustfmt::skip]
+let coordinates = vec![
+    0.000000, 0.000000, 0.000000,
+    0.000000, 0.000000, 1.807355,
+    1.807355, 0.000000, -0.452500,
+];
+let model = DFTD3Model::new(&atom_charges, &coordinates, None, None);
+let res = model.get_dispersion(&dftd3_param, false);
+let eng = res.energy;
+println!("Dispersion energy: {eng}");
+```
+
 ## Installation guide and Crate `dftd3-src`
 
 | Resources | Badges |

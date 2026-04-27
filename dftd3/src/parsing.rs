@@ -357,4 +357,12 @@ fn test_dftd3_parse_damping_param_from_toml_doc() {
     let res = model.get_dispersion(&dftd3_param, false);
     let eng = res.energy;
     println!("Dispersion energy: {eng}");
+
+    // custom parameter
+    let input = r#"{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211, atm = false}"#;
+    let damping_param = dftd3_parse_damping_param_from_toml(input);
+    let dftd3_param = damping_param.new_param();
+    let res = model.get_dispersion(&dftd3_param, false);
+    let eng = res.energy;
+    println!("Dispersion energy with custom params: {eng}");
 }

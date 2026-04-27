@@ -6,22 +6,26 @@
 //!
 //! # Supported input formats
 //!
-//! - **Usual case with method**: `{version = "d3bj", method = "b3lyp"}`
-//!   Lookup B3LYP-D3(BJ) parameters from the database.
-//! - **Version without d3 prefix**: `{version = "bj", method = "b3lyp"}`
-//!   The `d3` prefix is optional. The `version` field is case-insensitive, so `BJ` works too.
-//! - **Direct parameters**: `{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211}`
-//!   Specify parameters directly without using the database.
-//! - **ATM flag (no three-body)**: `{version = "bj", method = "b3lyp", atm = false}`
-//!   Sets `s9 = 0.0`. Default is `atm = true` (s9 = 1.0).
+//! - **Usual case with method**: `{version = "d3bj", method = "b3lyp"}` Lookup
+//!   B3LYP-D3(BJ) parameters from the database.
+//! - **Version without d3 prefix**: `{version = "bj", method = "b3lyp"}` The
+//!   `d3` prefix is optional. The `version` field is case-insensitive, so `BJ`
+//!   works too.
+//! - **Direct parameters**: `{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 =
+//!   4.4211}` Specify parameters directly without using the database.
+//! - **ATM flag (no three-body)**: `{version = "bj", method = "b3lyp", atm =
+//!   false}` Sets `s9 = 0.0`. Default is `atm = true` (s9 = 1.0).
 //! - **Parameter override**: `{version = "d3bj", method = "b3lyp", a1 = 0.5}`
 //!   Use database values but override `a1` to 0.5.
-//! - **Direct params + ATM**: `{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211, atm = false}`
-//!   Direct parameters with `s9 = 0.0`. If both `s9` and `atm` are provided, `s9` takes precedence.
+//! - **Direct params + ATM**: `{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2
+//!   = 4.4211, atm = false}` Direct parameters with `s9 = 0.0`. If both `s9`
+//!   and `atm` are provided, `s9` takes precedence.
 //! - **Method name normalization**: `{version = "zero", method = "m06-2x"}`
-//!   Separators like `-`, `_` are removed automatically (normalized to `m062x` for lookup).
+//!   Separators like `-`, `_` are removed automatically (normalized to `m062x`
+//!   for lookup).
 //! - **Invalid field error**: `{version = "d3bj", method = "b3lyp", rs6 = 0.5}`
-//!   Returns an error because `rs6` is not a valid parameter for the `bj` variant.
+//!   Returns an error because `rs6` is not a valid parameter for the `bj`
+//!   variant.
 //!
 //! # Example
 //!
@@ -203,7 +207,8 @@ fn parse_toml_table(input: &str) -> Result<Table, DFTD3Error> {
 ///
 /// # Panics
 ///
-/// Panics if parsing fails. Use [`dftd3_parse_damping_param_from_toml_f`] for a fallible version.
+/// Panics if parsing fails. Use [`dftd3_parse_damping_param_from_toml_f`] for a
+/// fallible version.
 ///
 /// # Example
 ///
@@ -242,7 +247,8 @@ pub fn dftd3_parse_damping_param_from_toml_f(input: &str) -> Result<DFTD3Damping
 ///
 /// # Panics
 ///
-/// Panics if parsing fails. Use [`dftd3_parse_damping_param_from_json_f`] for a fallible version.
+/// Panics if parsing fails. Use [`dftd3_parse_damping_param_from_json_f`] for a
+/// fallible version.
 ///
 /// # Example
 ///
@@ -263,7 +269,8 @@ pub fn dftd3_parse_damping_param_from_json(input: &str) -> DFTD3DampingParam {
 /// Parse damping parameters from a JSON string (fallible version).
 ///
 /// Requires the `json` feature.
-/// Supports the same input formats as [`dftd3_parse_damping_param_from_toml_f`].
+/// Supports the same input formats as
+/// [`dftd3_parse_damping_param_from_toml_f`].
 ///
 /// # Errors
 ///

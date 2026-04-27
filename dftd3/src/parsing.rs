@@ -6,12 +6,48 @@
 //!
 //! # Supported input formats
 //!
-//! - Method lookup: `{version = "bj", method = "b3lyp"}`
-//! - Direct parameters: `{version = "bj", a1 = 0.5, s8 = 2.0, a2 = 4.0}`
-//! - Method with override: `{version = "bj", method = "b3lyp", a1 = 0.5}`
-//! - ATM flag: `{version = "bj", method = "b3lyp", atm = false}` (sets s9 =
-//!   0.0)
-//! - Combined: `{version = "bj", a1 = 0.5, s8 = 2.0, a2 = 4.0, atm = false}`
+//! - **Usual case with method**: `{version = "d3bj", method = "b3lyp"}`
+//!   Lookup B3LYP-D3(BJ) parameters from the database.
+//! - **Version without d3 prefix**: `{version = "bj", method = "b3lyp"}`
+//!   The `d3` prefix is optional. The `version` field is case-insensitive, so `BJ` works too.
+//! - **Direct parameters**: `{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211}`
+//!   Specify parameters directly without using the database.
+//! - **ATM flag (no three-body)**: `{version = "bj", method = "b3lyp", atm = false}`
+//!   Sets `s9 = 0.0`. Default is `atm = true` (s9 = 1.0).
+//! - **Parameter override**: `{version = "d3bj", method = "b3lyp", a1 = 0.5}`
+//!   Use database values but override `a1` to 0.5.
+//! - **Direct params + ATM**: `{version = "d3bj", a1 = 0.3981, s8 = 1.9889, a2 = 4.4211, atm = false}`
+//!   Direct parameters with `s9 = 0.0`. If both `s9` and `atm` are provided, `s9` takes precedence.
+//! - **Method name normalization**: `{version = "zero", method = "m06-2x"}`
+//!   Separators like `-`, `_` are removed automatically (normalized to `m062x` for lookup).
+//! - **Invalid field error**: `{version = "d3bj", method = "b3lyp", rs6 = 0.5}`
+//!   Returns an error because `rs6` is not a valid parameter for the `bj` variant.
+//!
+//! # Example
+//!
+//! ```
+//! use dftd3::prelude::*;
+//!
+//! // B3LYP with Becke-Johnson damping, no overrides, atm = true (default)
+//! let input = r#"{version = "d3bj", method = "b3lyp"}"#;
+//! // toml parameter type
+//! let damping_param = dftd3_parse_damping_param_from_toml(input);
+//! // FFI parameter type
+//! let dftd3_param = damping_param.new_param();
+//!
+//! let atom_charges = vec![8, 1, 1];
+//! // coordinates in bohr
+//! #[rustfmt::skip]
+//! let coordinates = vec![
+//!     0.000000, 0.000000, 0.000000,
+//!     0.000000, 0.000000, 1.807355,
+//!     1.807355, 0.000000, -0.452500,
+//! ];
+//! let model = DFTD3Model::new(&atom_charges, &coordinates, None, None);
+//! let res = model.get_dispersion(&dftd3_param, false);
+//! let eng = res.energy;
+//! println!("Dispersion energy: {eng}");
+//! ```
 
 use crate::interface::DFTD3Error;
 use crate::parameters::{
@@ -61,7 +97,11 @@ fn valid_fields_for_version(version: &str) -> Result<&[&str], DFTD3Error> {
 /// - `method` is specified but not found in the database
 /// - A field not valid for the given variant is present
 /// - Required damping parameters are missing
-pub fn dftd3_parse_damping_param(input: &Table) -> Result<DFTD3DampingParam, DFTD3Error> {
+pub fn dftd3_parse_damping_param(input: &Table) -> DFTD3DampingParam {
+    dftd3_parse_damping_param_f(input).unwrap()
+}
+
+pub fn dftd3_parse_damping_param_f(input: &Table) -> Result<DFTD3DampingParam, DFTD3Error> {
     // 1. Extract version (required)
     let version_raw = input
         .get("version")
@@ -156,39 +196,89 @@ fn parse_toml_table(input: &str) -> Result<Table, DFTD3Error> {
     }
 }
 
-/// Parse damping parameters from a TOML string.
+/// Parse damping parameters from a TOML string (panics on error).
 ///
-/// Supports both standard TOML documents and inline table syntax like:
-/// - `{version = "bj", method = "b3lyp"}`
-/// - `{version = "bj", a1 = 0.5, s8 = 2.0, a2 = 4.0}`
+/// Supports both standard TOML documents and inline table syntax.
+/// See the [module-level documentation](self) for all supported input formats.
+///
+/// # Panics
+///
+/// Panics if parsing fails. Use [`dftd3_parse_damping_param_from_toml_f`] for a fallible version.
 ///
 /// # Example
 ///
-/// ```ignore
-/// let input = r#"{version = "bj", method = "b3lyp"}"#;
-/// let param = dftd3_parse_damping_param_from_toml(input)?;
 /// ```
-pub fn dftd3_parse_damping_param_from_toml(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
-    let table = parse_toml_table(input)?;
-    dftd3_parse_damping_param(&table)
+/// use dftd3::prelude::*;
+///
+/// let input = r#"{version = "bj", method = "b3lyp"}"#;
+/// let param = dftd3_parse_damping_param_from_toml(input);
+/// ```
+pub fn dftd3_parse_damping_param_from_toml(input: &str) -> DFTD3DampingParam {
+    dftd3_parse_damping_param_from_toml_f(input).unwrap()
 }
 
-/// Parse damping parameters from a JSON string.
+/// Parse damping parameters from a TOML string (fallible version).
+///
+/// Supports both standard TOML documents and inline table syntax.
+/// See the [module-level documentation](self) for all supported input formats.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - TOML parsing fails
+/// - Required field `version` is missing
+/// - Method not found in database
+/// - Unknown parameter field for the given variant
+/// - Parameter deserialization fails
+pub fn dftd3_parse_damping_param_from_toml_f(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+    let table = parse_toml_table(input)?;
+    dftd3_parse_damping_param_f(&table)
+}
+
+/// Parse damping parameters from a JSON string (panics on error).
 ///
 /// Requires the `json` feature.
+/// Supports the same input formats as [`dftd3_parse_damping_param_from_toml`].
+///
+/// # Panics
+///
+/// Panics if parsing fails. Use [`dftd3_parse_damping_param_from_json_f`] for a fallible version.
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```
+/// # #[cfg(feature = "json")]
+/// # {
+/// use dftd3::prelude::*;
+///
 /// let input = r#"{"version": "bj", "method": "b3lyp"}"#;
-/// let param = dftd3_parse_damping_param_from_json(input)?;
+/// let param = dftd3_parse_damping_param_from_json(input);
+/// # }
 /// ```
 #[cfg(feature = "json")]
-pub fn dftd3_parse_damping_param_from_json(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
+pub fn dftd3_parse_damping_param_from_json(input: &str) -> DFTD3DampingParam {
+    dftd3_parse_damping_param_from_json_f(input).unwrap()
+}
+
+/// Parse damping parameters from a JSON string (fallible version).
+///
+/// Requires the `json` feature.
+/// Supports the same input formats as [`dftd3_parse_damping_param_from_toml_f`].
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - JSON parsing fails
+/// - Required field `version` is missing
+/// - Method not found in database
+/// - Unknown parameter field for the given variant
+/// - Parameter deserialization fails
+#[cfg(feature = "json")]
+pub fn dftd3_parse_damping_param_from_json_f(input: &str) -> Result<DFTD3DampingParam, DFTD3Error> {
     let value: serde_json::Value = serde_json::from_str(input)
         .map_err(|e| DFTD3Error::ParametersError(format!("JSON parsing error: {e}")))?;
     let table = json_value_to_toml_table(&value)?;
-    dftd3_parse_damping_param(&table)
+    dftd3_parse_damping_param_f(&table)
 }
 
 /// Convert a JSON object to a TOML table.
@@ -236,4 +326,28 @@ fn json_value_to_toml(value: &serde_json::Value) -> Result<toml::Value, DFTD3Err
             Ok(toml::Value::Table(table))
         },
     }
+}
+
+#[test]
+fn test_dftd3_parse_damping_param_from_toml_doc() {
+    use crate::prelude::*;
+    // B3LYP with Becke-Johnson damping, no overrides, atm = true (default)
+    let input = r#"{version = "d3bj", method = "b3lyp"}"#;
+    // toml parameter type
+    let damping_param = dftd3_parse_damping_param_from_toml(input);
+    // FFI parameter type
+    let dftd3_param = damping_param.new_param();
+
+    let atom_charges = vec![8, 1, 1];
+    // coordinates in bohr
+    #[rustfmt::skip]
+    let coordinates = vec![
+        0.000000, 0.000000, 0.000000,
+        0.000000, 0.000000, 1.807355,
+        1.807355, 0.000000, -0.452500,
+    ];
+    let model = DFTD3Model::new(&atom_charges, &coordinates, None, None);
+    let res = model.get_dispersion(&dftd3_param, false);
+    let eng = res.energy;
+    println!("Dispersion energy: {eng}");
 }

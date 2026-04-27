@@ -240,7 +240,6 @@ fn test_b97d_d3_op(model: DFTD3Model, #[case] atm: bool, #[case] expected: f64) 
 
 // GCP tests
 #[rstest]
-#[ignore = "seems dealloc bug in simple-dftd3's delete_gcp_api function"]
 #[cfg(feature = "gcp")]
 fn test_gcp_empty(numbers: Vec<usize>, positions: Vec<f64>) {
     let gcp = DFTD3GCP::new(&numbers, &positions, None, None, "", "");
@@ -249,13 +248,8 @@ fn test_gcp_empty(numbers: Vec<usize>, positions: Vec<f64>) {
 }
 
 #[rstest]
-// test ignored due to upstream bug in simple-dftd3's delete_gcp_api function which incorrectly uses
-// vp_error type instead of vp_gcp type, causing segfault when deallocating complex parameter sets
-// with allocated xv/emiss/slater arrays.
 #[cfg(feature = "gcp")]
-#[ignore = "seems dealloc bug in simple-dftd3's delete_gcp_api function"]
 #[case("b973c", -0.07653225860427701)]
-#[ignore = "seems dealloc bug in simple-dftd3's delete_gcp_api function"]
 #[case("pbeh3c", 0.04977771585466725)]
 fn test_gcp_3c(
     numbers: Vec<usize>,

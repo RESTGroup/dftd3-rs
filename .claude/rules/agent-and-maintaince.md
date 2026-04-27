@@ -16,5 +16,7 @@
     - minimax* (eg. MiniMax-M2.5): model@minimax.io
     - deepseek* (eg. DeepSeek-V3.2): service@deepseek.com
     - kimi* (eg. kimi-k2.5): growth@moonshot.cn
+    - doubao* (eg. doubao-seed-2.0-code): doubao-llm@bytedance.com
   - Model name should include the version or details, such as `qwen3.5-plus`, `glm-5`, which can be inferred by Claude Code's `/model` property.
 
+- You should not git commit by yourself. Please return the code changes to the user, and let the user decide whether to commit or not.

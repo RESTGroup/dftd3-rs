@@ -2,7 +2,7 @@
 
 This project contains simple-dftd3 FFI bindings, wrapper and build-from-source.
 
-Current binding of simple-dftd3: [![v1.3.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3?filter=v1.3.1)](https://github.com/dftd3/simple-dftd3/releases/v1.3.1)
+Current binding of simple-dftd3: [![v1.4.0](https://img.shields.io/github/v/release/dftd3/simple-dftd3?filter=v1.4.0)](https://github.com/dftd3/simple-dftd3/releases/v1.4.0)
 
 Source code of simple-dftd3 is available on [github](https://github.com/dftd3/simple-dftd3).
 
@@ -16,7 +16,7 @@ This crate contains simple-dftd3 FFI bindings and wrapper.
 |--|--|
 | Crate | [![Crate](https://img.shields.io/crates/v/dftd3.svg)](https://crates.io/crates/dftd3) |
 | API Document | [![API Documentation](https://docs.rs/dftd3/badge.svg)](https://docs.rs/dftd3) |
-| FFI Binding | [![v1.3.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3?filter=v1.3.1)](https://github.com/dftd3/simple-dftd3/releases/v1.3.1) |
+| FFI Binding | [![v1.4.0](https://img.shields.io/github/v/release/dftd3/simple-dftd3?filter=v1.4.0)](https://github.com/dftd3/simple-dftd3/releases/v1.4.0) |
 
 ### Dynamic loading guide
 
@@ -104,8 +104,8 @@ Default cargo features of `dftd3` are:
 - **`dynamic_loading`**: This will enable dynamic loading of `s-dftd3` library, which can be more flexible for users who do not want to perform static linking. Please place `libs-dftd3.so` in `LD_LIBRARY_PATH` (for macos, place `libs-dftd3.dylib` in `DYLD_LIBRARY_PATH`), and function symbols will be loaded at runtime.
 
 Other cargo features of `dftd3` are:
-- **`gcp`**: Support of geometric counterpoise correction. Please note that this is not available in latest stable release of simple-dftd3 (at the time writing this readme, is v1.3.1). Unless you build simple-dftd3 from git repository, you may not use this feature (especially installed simple-dftd3 from conda or similar).
-- **`api-v1_3`**: Corresponding to the original simple-dftd3 [v1.3](https://github.com/dftd3/simple-dftd3/releases/tag/v1.3.1). This will additionally enable versions `cso` and cargo feature `gcp`.
+- **`gcp`**: Support of geometric counterpoise correction. Please note that this is not available in latest stable release of simple-dftd3 (at the time writing this readme, is v1.4.0). Unless you build simple-dftd3 from git repository, you may not use this feature (especially installed simple-dftd3 from conda or similar).
+- **`api-v1_3`**: Corresponding to the original simple-dftd3 [v1.3](https://github.com/dftd3/simple-dftd3/releases/tag/v1.4.0). This will additionally enable versions `cso` and cargo feature `gcp`.
 - **`json`**: This will enable JSON parsing for DFTD3 parameters. Note that toml parsing is builtin, and json is an optional feature.
 
 ## Installation guide and Crate `dftd3-src`
@@ -166,7 +166,7 @@ If you have not compiled `s-dftd3` library, you may try out cargo feature `build
 
     CMake configurable variables (can be defined as environment variables):
     - `DFTD3_SRC`: git repository source directory or URL;
-    - `DFTD3_VER`: version of DFT-D3 (default v1.3.1);
+    - `DFTD3_VER`: version of DFT-D3 (default v1.4.0);
 
 - **`static`**: This will link static libary instead of dynamic one. Please note that 1. static linking may require additional Fortran and OpenMP linking, which is not provided in this crate; 2. staticly linking LGPL-3.0 license may require your project to be GPL-3.0.
 

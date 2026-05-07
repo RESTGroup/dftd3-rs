@@ -40,6 +40,7 @@ api-v0_3 = ["api-v0_2"]
 api-v0_4 = ["api-v0_3"]
 api-v0_5 = ["api-v0_4"]
 api-v1_3 = ["api-v0_5", "gcp"]
+api-v1_4 = ["api-v1_3"]
 
 # JSON input support for parsing module
 json = ["dep:serde_json"]

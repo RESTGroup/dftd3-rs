@@ -254,6 +254,18 @@ fn test_b97d_d3_op(model: DFTD3Model, #[case] atm: bool, #[case] expected: f64) 
     assert_abs_diff_eq!(res.energy, expected, epsilon = 1e-8);
 }
 
+#[cfg(feature = "api-v1_4")]
+#[rstest]
+fn test_smooth_realspace_cutoff(model: DFTD3Model) {
+    let param = DFTD3RationalDampingParam::load_param("pbe0", true);
+    let ref_energy = model.get_dispersion(&param, false).energy;
+
+    model.set_realspace_cutoff_smooth(8.0, 8.0, 40.0, 4.0, 4.0);
+    let res_energy = model.get_dispersion(&param, false).energy;
+
+    assert!((res_energy - ref_energy).abs() > 1e-8);
+}
+
 // GCP tests
 #[rstest]
 #[cfg(feature = "gcp")]

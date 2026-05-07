@@ -1284,6 +1284,51 @@ impl DFTD3Model {
         }
     }
 
+    #[cfg(feature = "api-v1_4")]
+    /// Set realspace cutoffs with smoothing widths (in Bohr).
+    pub fn set_realspace_cutoff_smooth(
+        &self,
+        disp2: f64,
+        disp3: f64,
+        cn: f64,
+        width2: f64,
+        width3: f64,
+    ) {
+        self.set_realspace_cutoff_smooth_f(disp2, disp3, cn, width2, width3).unwrap()
+    }
+
+    #[cfg(feature = "api-v1_4")]
+    /// Set realspace cutoffs with smoothing widths (in Bohr, failable).
+    ///
+    /// # See also
+    ///
+    /// [`DFTD3Model::set_realspace_cutoff_smooth`]
+    pub fn set_realspace_cutoff_smooth_f(
+        &self,
+        disp2: f64,
+        disp3: f64,
+        cn: f64,
+        width2: f64,
+        width3: f64,
+    ) -> Result<(), DFTD3Error> {
+        let mut error = DFTD3Error::new();
+        unsafe {
+            ffi::dftd3_set_model_realspace_cutoff_smooth(
+                error.get_c_ptr(),
+                self.ptr,
+                disp2,
+                disp3,
+                cn,
+                width2,
+                width3,
+            )
+        };
+        match error.check() {
+            true => Err(error),
+            false => Ok(()),
+        }
+    }
+
     /// Create new D3 dispersion model from structure (failable).
     ///
     /// # See also

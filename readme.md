@@ -100,12 +100,13 @@ println!("Dispersion energy: {eng}");
 ### Cargo features of `dftd3`
 
 Default cargo features of `dftd3` are:
-- **`api-v0_5`**: Corresponding to the original simple-dftd3 [v0.5](https://github.com/dftd3/simple-dftd3/releases/tag/v0.5.1). This will enable versions `bj`, `zero`, `mbj`, `mzero`, `op`. Note `cso` and cargo feature `gcp` are not included in `api-v0_5`.
+- **`api-v0_5`**: Corresponding to the original simple-dftd3 [v0.5](https://github.com/dftd3/simple-dftd3/releases/tag/v0.5.1). This will enable versions `bj`, `zero`, `mbj`, `mzero`, `op`. Note `cso` and cargo feature `gcp` are not included in `api-v0_5`. If higher API version features are required, you need to manually enable them by setting cargo features `api-v1_4`.
 - **`dynamic_loading`**: This will enable dynamic loading of `s-dftd3` library, which can be more flexible for users who do not want to perform static linking. Please place `libs-dftd3.so` in `LD_LIBRARY_PATH` (for macos, place `libs-dftd3.dylib` in `DYLD_LIBRARY_PATH`), and function symbols will be loaded at runtime.
 
 Other cargo features of `dftd3` are:
 - **`gcp`**: Support of geometric counterpoise correction. Please note that this is not available in latest stable release of simple-dftd3 (at the time writing this readme, is v1.4.0). Unless you build simple-dftd3 from git repository, you may not use this feature (especially installed simple-dftd3 from conda or similar).
 - **`api-v1_3`**: Corresponding to the original simple-dftd3 [v1.3](https://github.com/dftd3/simple-dftd3/releases/tag/v1.4.0). This will additionally enable versions `cso` and cargo feature `gcp`.
+- **`api-v1_4`**: Enables realspace cutoff setters.
 - **`json`**: This will enable JSON parsing for DFTD3 parameters. Note that toml parsing is builtin, and json is an optional feature.
 
 ## Installation guide and Crate `dftd3-src`

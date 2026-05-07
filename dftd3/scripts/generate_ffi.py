@@ -44,6 +44,7 @@ api_versions = [
     ("V_0_4", "api-v0_4"),
     ("V_0_5", "api-v0_5"),
     ("V_1_3", "api-v1_3"),
+    ("V_1_4", "api-v1_4"),
 ]
 
 # Default API version (used when no features are specified)
@@ -142,6 +143,7 @@ def generate_static_ffi(token, version_map):
 //! - `api-v0_4`: Extends api-v0_3, adds damping parameter functions
 //! - `api-v0_5`: Extends api-v0_4, adds optimized power damping and pairwise dispersion
 //! - `api-v1_3`: Full API, adds CSO damping and GCP functions
+//! - `api-v1_4`: Extends api-v1_3, adds smooth realspace cutoff
 //!
 //! Features are cumulative: enabling `api-v0_5` also enables all functions from
 //! earlier versions (api-v0_2, api-v0_3, api-v0_4).
@@ -392,9 +394,6 @@ def main():
 
     with open(f"{path_out}/src/ffi_dynamic/dyload_compatible.rs", "w") as f:
         f.write(dyload_files["dyload_compatible"])
-
-    with open(f"{path_out}/src/ffi_dynamic/mod.rs", "w") as f:
-        f.write(DYLOAD_MOD_TEMPLATE)
 
     # Run cargo fmt
     os.chdir(path_out)

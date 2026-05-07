@@ -10,7 +10,7 @@ These are constant rules that always apply when working on version updates. For 
 
 ## Feature flag rules
 
-- Feature flags are **cumulative**: `api-v0_2` → `api-v0_3` → `api-v0_4` → `api-v0_5` → `api-v1_3` → ... Each version extends the previous.
+- Feature flags are **cumulative**: `api-v0_2` → `api-v0_3` → `api-v0_4` → `api-v0_5` → `api-v1_3` → `api-v1_4` → ... Each version extends the previous.
 - A new version feature must always depend on the immediately preceding version feature.
 - If a version introduces a distinct capability (like `gcp`), create a separate feature and have the version feature depend on it.
 - Static FFI respects feature flags (`#[cfg(feature = "api-vX_Y")]`). Dynamic loading ignores them — all functions are available at runtime.

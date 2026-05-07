@@ -10,6 +10,7 @@
 //! - `api-v0_5`: Extends api-v0_4, adds optimized power damping and pairwise
 //!   dispersion
 //! - `api-v1_3`: Full API, adds CSO damping and GCP functions
+//! - `api-v1_4`: Extends api-v1_3, adds smooth realspace cutoff
 //!
 //! Features are cumulative: enabling `api-v0_5` also enables all functions from
 //! earlier versions (api-v0_2, api-v0_3, api-v0_4).
@@ -103,6 +104,17 @@ unsafe extern "C" {
         arg3: f64,
         arg4: f64,
         arg5: f64,
+    );
+    #[cfg(feature = "api-v1_4")]
+    #[doc = " Set realspace cutoffs with smoothing widths (quantities in Bohr)"]
+    pub fn dftd3_set_model_realspace_cutoff_smooth(
+        arg1: dftd3_error,
+        arg2: dftd3_model,
+        arg3: f64,
+        arg4: f64,
+        arg5: f64,
+        arg6: f64,
+        arg7: f64,
     );
     #[cfg(feature = "api-v0_2")]
     #[doc = " Delete dispersion model"]

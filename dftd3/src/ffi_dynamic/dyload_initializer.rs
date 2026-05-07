@@ -29,6 +29,11 @@ impl DyLoadLib {
                 b"dftd3_set_model_realspace_cutoff\0",
             )
             .map(|sym| *sym),
+            dftd3_set_model_realspace_cutoff_smooth: get_symbol(
+                &libs,
+                b"dftd3_set_model_realspace_cutoff_smooth\0",
+            )
+            .map(|sym| *sym),
             dftd3_delete_model: get_symbol(&libs, b"dftd3_delete_model\0").map(|sym| *sym),
             dftd3_new_zero_damping: get_symbol(&libs, b"dftd3_new_zero_damping\0").map(|sym| *sym),
             dftd3_load_zero_damping: get_symbol(&libs, b"dftd3_load_zero_damping\0")

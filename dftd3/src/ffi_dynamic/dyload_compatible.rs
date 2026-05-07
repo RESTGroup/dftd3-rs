@@ -66,6 +66,20 @@ pub unsafe fn dftd3_set_model_realspace_cutoff(
     dyload_lib().dftd3_set_model_realspace_cutoff.unwrap()(arg1, arg2, arg3, arg4, arg5)
 }
 
+pub unsafe fn dftd3_set_model_realspace_cutoff_smooth(
+    arg1: dftd3_error,
+    arg2: dftd3_model,
+    arg3: f64,
+    arg4: f64,
+    arg5: f64,
+    arg6: f64,
+    arg7: f64,
+) {
+    dyload_lib().dftd3_set_model_realspace_cutoff_smooth.unwrap()(
+        arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+    )
+}
+
 pub unsafe fn dftd3_delete_model(arg1: *mut dftd3_model) {
     dyload_lib().dftd3_delete_model.unwrap()(arg1)
 }

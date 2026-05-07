@@ -19,8 +19,8 @@ jobs:
           ls /usr/share/miniconda/lib
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
           export DFTD3_DEV=1
-          cargo test --no-default-features --features="api-v1_3" -- --nocapture
-          cargo test --no-default-features --features="api-v1_3" --examples -- --nocapture
+          cargo test --no-default-features --features="api-v1_4" -- --nocapture
+          cargo test --no-default-features --features="api-v1_4" --examples -- --nocapture
 
   test-dynamic-loading:
     runs-on: ubuntu-latest
@@ -34,5 +34,5 @@ jobs:
           ls /usr/share/miniconda/lib
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/lib
           export DFTD3_DEV=1
-          cargo test --features="api-v1_3" -- --nocapture
-          cargo test --features="api-v1_3" --examples -- --nocapture
+          cargo test --features="api-v1_4" -- --nocapture
+          cargo test --features="api-v1_4" --examples -- --nocapture

@@ -1,6 +1,39 @@
 //! FFI module for dftd3 (dynamic loading).
 //!
 //! This module provides dynamic loading support.
+//!
+//! # Rule and guide of dynamic loading
+//!
+//! By enabling the `dynamic_loading` feature (which is the default), the crate
+//! will attempt to load the s-dftd3 shared library at runtime. The loading
+//! process will search for the library in multiple locations, by the following
+//! order:
+//!
+//! 1. User-defined candidates via environment variables `DFTD3_DYLOAD`.
+//! 2. LD_LIBRARY_PATH style discovery via environment variables
+//!    `LD_LIBRARY_PATH` (Linux), `DYLD_LIBRARY_PATH` and
+//!    `DYLD_FALLBACK_LIBRARY_PATH` (macOS), `PATH` (Windows). Note we are not
+//!    distinguishing different operating systems, so all these environment
+//!    variables will be checked on all platforms.
+//! 3. Python interpreter path discovery: For each python interpreter found, the
+//!    library is expected to be at the `lib` directory of the python
+//!    installation. For example, if python is at `/path/bin/python`, the
+//!    library is expected at `/path/lib/libs-dftd3.so`.
+//!    - The python interpreter path of `DFTD3_PYTHON_PATH` environment
+//!      variable, if set.
+//!    - The conda prefix path of `CONDA_PREFIX` environment variable, if set.
+//!    - The python interpreter path in `PATH` environment variable, if exists.
+//!      Will first check `python`, then `python3`.
+//! 4. Standard system candidates, such as `lib{LIB_NAME_LINK}.so` in some
+//!    common library directories such as `/usr/lib`, `/usr/local/lib`, and
+//!    `/lib`.
+//!
+//! For API developer, if you want to check the library `libs-dftd3.so` loading
+//! sequence, you can try the following code:
+//! ```rust
+//! let candidates = unsafe { &dftd3::ffi::dyload_lib().__libraries_path };
+//! println!("Library loading candidates: {candidates:#?}");
+//! ```
 
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
@@ -24,33 +57,50 @@ mod dynamic_loading_specific {
 
     /// Detect Python interpreter path and return the corresponding lib
     /// directory. Uses OnceLock pattern for lazy initialization.
-    static PYTHON_LIB_PATH: OnceLock<Option<String>> = OnceLock::new();
+    static PYTHON_LIB_PATH: OnceLock<Vec<String>> = OnceLock::new();
 
-    fn detect_python_lib_path() -> Option<String> {
+    fn detect_python_lib_paths() -> Vec<String> {
         PYTHON_LIB_PATH
             .get_or_init(|| {
+                let mut lib_paths = vec![];
+
                 // 1. Check explicit environment variable first
                 if let Ok(python_path) = std::env::var("DFTD3_PYTHON_PATH") {
                     if let Some(lib_path) = extract_lib_from_python_bin(&python_path) {
-                        return Some(lib_path);
+                        lib_paths.push(lib_path);
                     }
                 }
 
-                // 2. Try to find python in PATH
+                // 2. Check conda prefix exists
+                if let Ok(conda_prefix) = std::env::var("CONDA_PREFIX") {
+                    let conda_lib_path = format!("{conda_prefix}/lib");
+                    if std::path::Path::new(&conda_lib_path).exists() {
+                        lib_paths.push(conda_lib_path);
+                    }
+                }
+
+                // 3. Try to find python in PATH
                 if let Ok(paths) = std::env::var("PATH") {
+                    // first check python, then python3
                     for path in paths.split(":") {
-                        for python_name in ["python3", "python"] {
-                            let python_bin = format!("{path}/{python_name}");
-                            if std::path::Path::new(&python_bin).exists() {
-                                if let Some(lib_path) = extract_lib_from_python_bin(&python_bin) {
-                                    return Some(lib_path);
-                                }
+                        let python_bin = format!("{path}/python");
+                        if std::path::Path::new(&python_bin).exists() {
+                            if let Some(lib_path) = extract_lib_from_python_bin(&python_bin) {
+                                lib_paths.push(lib_path);
+                            }
+                        }
+                    }
+                    for path in paths.split(":") {
+                        let python_bin = format!("{path}/python3");
+                        if std::path::Path::new(&python_bin).exists() {
+                            if let Some(lib_path) = extract_lib_from_python_bin(&python_bin) {
+                                lib_paths.push(lib_path);
                             }
                         }
                     }
                 }
 
-                None
+                lib_paths
             })
             .clone()
     }
@@ -80,7 +130,12 @@ mod dynamic_loading_specific {
         }
 
         // LD_LIBRARY_PATH style discovery
-        for env_var in ["LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH"] {
+        for env_var in [
+            "LD_LIBRARY_PATH",            // linux
+            "DYLD_LIBRARY_PATH",          // macos
+            "DYLD_FALLBACK_LIBRARY_PATH", // macos
+            "PATH",                       // windows
+        ] {
             if let Ok(paths) = std::env::var(env_var) {
                 for path in paths.split(":") {
                     candidates.push(format!("{path}/{DLL_PREFIX}{LIB_NAME_LINK}{DLL_SUFFIX}"));
@@ -89,7 +144,7 @@ mod dynamic_loading_specific {
         }
 
         // Python interpreter path discovery (cached)
-        if let Some(lib_path) = detect_python_lib_path() {
+        for lib_path in detect_python_lib_paths() {
             candidates.push(format!("{lib_path}/{DLL_PREFIX}{LIB_NAME_LINK}{DLL_SUFFIX}"));
         }
 

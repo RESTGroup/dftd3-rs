@@ -2,7 +2,7 @@
 
 This project contains simple-dftd3 FFI bindings, wrapper and build-from-source.
 
-Current binding of simple-dftd3: [![v1.3.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3)](https://github.com/dftd3/simple-dftd3/releases/v1.3.1)
+Current binding of simple-dftd3: [![v1.3.1](https://img.shields.io/github/v/release/dftd3/simple-dftd3?filter=v1.3.1)](https://github.com/dftd3/simple-dftd3/releases/v1.3.1)
 
 Source code of simple-dftd3 is available on [github](https://github.com/dftd3/simple-dftd3).
 

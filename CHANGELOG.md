@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.2 -- 2026-05-07
+
+Update original simple-dftd3 version to be binding (v1.4.0).
+
 ## v0.2.1 -- 2026-05-07
 
 Behavior change:

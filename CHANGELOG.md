@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.1 -- 2026-05-07
+
+Behavior change:
+
+- Update dynamic loading logic
+    - now check CONDA_PREFIX first, then python in PATH, then python3 in PATH
+    - now all python in PATH will try to be parsed, not the first one
+
 ## v0.2.0 -- 2026-04-27
 
 Code changes applied from RESTGroup/dftd3-rs#3 and RESTGroup/dftd3-rs#4.

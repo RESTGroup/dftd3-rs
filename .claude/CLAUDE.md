@@ -33,3 +33,5 @@ Important files for FFI and wrapper development:
 ## Header handling
 
 We use bindgen (python script at `scripts/generate_bindings.py`) to generate Rust bindings for the C header files. **Not modify the generated files directly**.
+
+Exception is `ffi_dynamic/mod.rs`. This file can be manually modified.

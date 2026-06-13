@@ -156,7 +156,8 @@ mod dynamic_loading_specific {
     fn get_lib_candidates() -> Vec<String> {
         let mut candidates = vec![];
 
-        // User-defined candidates via environment variables (paths split by platform separator)
+        // User-defined candidates via environment variables (paths split by platform
+        // separator)
         for env_var in [format!("DFTD3_DYLOAD_{LIB_NAME}").as_str(), "DFTD3_DYLOAD"] {
             if let Ok(path) = std::env::var(env_var) {
                 candidates.extend(path.split(PATH_LIST_SEPARATOR).map(|s| s.to_string()));

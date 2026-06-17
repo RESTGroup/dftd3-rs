@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.3 -- 2026-06-17
+
+Enhancement:
+
+- Better support for windows. (RESTGroup/dftd3-rs#6 @jeanwsr)
+
 ## v0.2.2 -- 2026-05-07
 
 Update original simple-dftd3 version to be binding (v1.4.0).
